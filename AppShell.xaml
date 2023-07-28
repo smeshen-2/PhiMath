@@ -13,5 +13,8 @@
         <ShellContent
             Title="Polynomials"
             ContentTemplate="{DataTemplate pages:Polynomials}"/>
+        <ShellContent
+            Title="Geometry"
+            ContentTemplate="{DataTemplate pages:Geometry}"/>
     </Tab>
 </Shell>
