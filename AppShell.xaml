@@ -6,15 +6,19 @@
     xmlns:pages="clr-namespace:PhiMath.Pages"
     Shell.FlyoutBehavior="Disabled">
 
-    <Tab>
-        <ShellContent
-            Title="Factors"
-            ContentTemplate="{DataTemplate pages:Factors}"/>
-        <ShellContent
-            Title="Polynomials"
-            ContentTemplate="{DataTemplate pages:Polynomials}"/>
-        <ShellContent
-            Title="Geometry"
-            ContentTemplate="{DataTemplate pages:Geometry}"/>
-    </Tab>
+    <TabBar>
+        <Tab Title="Algebra">
+            <ShellContent
+                Title="Factors"
+                ContentTemplate="{DataTemplate pages:Factors}"/>
+            <ShellContent
+                Title="Polynomials"
+                ContentTemplate="{DataTemplate pages:Polynomials}"/>
+        </Tab>
+        <Tab Title="Geometry">
+            <ShellContent
+                Title="Triangles?"
+                ContentTemplate="{DataTemplate pages:Geometry}"/>
+        </Tab>
+    </TabBar>
 </Shell>
