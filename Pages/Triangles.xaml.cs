@@ -3,9 +3,9 @@ using GeometryTools;
 
 namespace PhiMath.Pages;
 
-public partial class Geometry : ContentPage
+public partial class Triangles : ContentPage
 {
-	public Geometry()
+	public Triangles()
 	{
 		InitializeComponent();
 	}

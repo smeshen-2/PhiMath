@@ -17,8 +17,8 @@
         </Tab>
         <Tab Title="Geometry">
             <ShellContent
-                Title="Triangles?"
-                ContentTemplate="{DataTemplate pages:Geometry}"/>
+                Title="Triangles"
+                ContentTemplate="{DataTemplate pages:Triangles}"/>
         </Tab>
     </TabBar>
 </Shell>
