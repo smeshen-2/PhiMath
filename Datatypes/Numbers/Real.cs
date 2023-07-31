@@ -62,28 +62,45 @@ public class Real
             if (r.A * r.B != 0) Roots.Add(r);
         }
     }
+    
+    public static Real operator +(Real a, Real b)
+    {
+        Real result = new Real();
+        result.Roots.AddRange(a.Roots);
+        result.Roots.AddRange(b.Roots);
+        result.Simplify();
+        return result;
+    }
 
     public static Real operator +(Real a, Root b)
     {
-        a.Roots.Add(b);
-        return a;
+        Real result = new Real();
+        result.Roots.AddRange(a.Roots);
+        result.Roots.Add(b);
+        result.Simplify();
+        return result;
+    }
+
+    public static Real operator -(Real real)
+    {
+        return new Real(real.Roots.Select(r => -r).ToArray());
+    }
+
+    public static Real operator -(Real a, Real b)
+    {
+        return a + (-b);
     }
 
     public static Real operator -(Real a, Root b)
     {
-        a.Roots.Add(-b);
-        return a;
+        return a + (-b);
     }
 
     public static Real operator *(Real a, Root b)
     {
-        var roots = a.Roots.ToArray();
-        for (int i = 0; i < roots.Length; i++)
-        {
-            roots[i] *= b;
-        }
-        a.Roots = roots.ToList();
-        return a;
+        Real result = new Real();
+        result.Roots.AddRange(a.Roots.Select(r => r * b));
+        return result;
     }
 
     public static Real operator *(Real a, Real b)
@@ -98,7 +115,21 @@ public class Real
                 k++;
             }
         }
-        return new Real(roots);
+        Real result = new Real(roots);
+        result.Simplify();
+        return result;
+    }
+
+    public Real Squared()
+    {
+        return this * this;
+    }
+
+    public static Real operator /(Real a, Root b)
+    {
+        Real result = new Real(a.Roots.Select(r => r / b).ToArray());
+        result.Simplify();
+        return result;
     }
 
     public override string ToString()
