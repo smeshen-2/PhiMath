@@ -48,13 +48,27 @@ public partial class Triangles : ContentPage
         if (gamma.Text != null && gamma.Text != "" && gamma.TextColor == defaultColor) angles[2] = int.Parse(gamma.Text);
         else angles[2] = 0;
 
-        var knownSideIndexes = new HashSet<int>();
-        var knownAngleIndexes = new HashSet<int>();
+        var knownSideIndexes = new SortedSet<int>();
+        var knownAngleIndexes = new SortedSet<int>();
         for (int i = 0; i < 3; i++)
         {
             if (sides[i] != null) knownSideIndexes.Add(i);
             if (angles[i] != 0) knownAngleIndexes.Add(i);
         }
+
+        if (knownAngleIndexes.Count == 2)
+        {
+            // figuring out which angle is unknown
+            Entry unknownAngle = alpha;
+            if (angles[1] == 0) unknownAngle = beta;
+            else if (angles[2] == 0) unknownAngle = gamma;
+
+            angles[3 - knownAngleIndexes.Sum()] = 180 - angles.Sum();
+            unknownAngle.Text = angles[3 - knownAngleIndexes.Sum()].ToString();
+            knownAngleIndexes.Add(3 - knownAngleIndexes.Sum());
+            unknownAngle.TextColor = uneditedColor;
+        }
+
         if (knownSideIndexes.Count == 3)
         {
             var perimeter = sides[0] + sides[1] + sides[2];
@@ -63,19 +77,19 @@ public partial class Triangles : ContentPage
         }
         else if (knownSideIndexes.Count == 2 && knownAngleIndexes.Count > 0)
         {
+            // figuring out which side is unknown
+            Entry unknownSide = a;
+            if (sides[1] == null) unknownSide = b;
+            if (sides[2] == null) unknownSide = c;
+
             // if it is an angle between two known sides
             if (knownAngleIndexes.Contains(3 - knownSideIndexes.Sum()))
             {
                 // cos theorem
                 Real side1 = sides[knownSideIndexes.First()];
                 Real side2 = sides[knownSideIndexes.Skip(1).First()];
-                int angle = angles[knownAngleIndexes.First()];
+                int angle = angles[3 - knownSideIndexes.Sum()];
                 Real side3 = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
-
-                // figuring out which side is unknown
-                Entry unknownSide = a;
-                if (sides[1] == null) unknownSide = b;
-                if (sides[2] == null) unknownSide = c;
 
                 if (side3.Roots.Count == 1)
                     unknownSide.Text = Fraction.Sqrt(side3.Roots[0].A).Simplified().ToString();
@@ -84,6 +98,10 @@ public partial class Triangles : ContentPage
 
                 unknownSide.TextColor = uneditedColor;
             }
+        }
+        else if (knownSideIndexes.Count == 1 && knownAngleIndexes.Count == 3)
+        {
+
         }
     }
 
