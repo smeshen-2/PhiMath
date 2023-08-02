@@ -5,13 +5,24 @@ namespace PhiMath.Pages;
 
 public partial class Triangles : ContentPage
 {
-    private static Dictionary<int, Root> cos;
+    private static Dictionary<int, Root> sin, cos;
     private static Color defaultColor;
     private static Color uneditedColor;
 
     public Triangles()
     {
         InitializeComponent();
+        sin = new Dictionary<int, Root>
+        {
+            { 30, "1/2" },
+            { 45, "V2/2" },
+            { 60, "V3/2" },
+            { 90, "1" },
+            { 120, "V3/2" },
+            { 135, "V2/2" },
+            { 150, "1/2" }
+        };
+
         cos = new Dictionary<int, Root>
         {
             { 30, "V3/2" },
@@ -74,6 +85,7 @@ public partial class Triangles : ContentPage
             var perimeter = sides[0] + sides[1] + sides[2];
             perimeter.Simplify();
             P.Text = perimeter.ToString();
+            P.TextColor = uneditedColor;
         }
         else if (knownSideIndexes.Count == 2 && knownAngleIndexes.Count > 0)
         {
@@ -89,13 +101,30 @@ public partial class Triangles : ContentPage
                 Real side1 = sides[knownSideIndexes.First()];
                 Real side2 = sides[knownSideIndexes.Skip(1).First()];
                 int angle = angles[3 - knownSideIndexes.Sum()];
-                Real side3 = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
+                Real side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
 
-                if (side3.Roots.Count == 1)
-                    unknownSide.Text = Fraction.Sqrt(side3.Roots[0].A).Simplified().ToString();
+                if (side3Squared.Roots.Count == 1)
+                {
+                    Real side3 = new Real(Fraction.Sqrt(side3Squared.Roots[0].A).Simplified());
+                    unknownSide.Text = side3.ToString();
+                    Real perimeter = side1 + side2 + side3;
+                    perimeter.Simplify();
+                    P.Text = perimeter.ToString();
+                }
                 else
-                    unknownSide.Text = "√(" + side3.ToString() + ")";
-
+                {
+                    string side3 = "√(" + side3Squared.ToString() + ")";
+                    unknownSide.Text = side3;
+                    Real perimeter = side1 + side2;
+                    perimeter.Simplify();
+                    P.Text = perimeter.ToString() + "+" + side3;
+                }
+                // S = 1/2 * a * b * sin(gamma)
+                Real area = "1/2" * side1 * side2 * sin[angle];
+                area.Simplify();
+                S.Text = area.ToString();
+                S.TextColor = uneditedColor;
+                P.TextColor = uneditedColor;
                 unknownSide.TextColor = uneditedColor;
             }
         }
