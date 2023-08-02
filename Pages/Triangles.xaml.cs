@@ -110,6 +110,9 @@ public partial class Triangles : ContentPage
                     Real perimeter = side1 + side2 + side3;
                     perimeter.Simplify();
                     P.Text = perimeter.ToString();
+                    // sine theorem
+                    Root bigRadius = side3.Roots[0] / (sin[angle] * "2");
+                    R.Text = bigRadius.Simplified().ToString();
                 }
                 else
                 {
@@ -118,14 +121,19 @@ public partial class Triangles : ContentPage
                     Real perimeter = side1 + side2;
                     perimeter.Simplify();
                     P.Text = perimeter.ToString() + "+" + side3;
+                    // sine theorem
+                    var d = sin[angle] * "2";
+                    string bigRadius = d == "1" ? side3.ToString() : side3 + "/" + d.ToString();
+                    R.Text = bigRadius;
                 }
+                unknownSide.TextColor = uneditedColor;
                 // S = 1/2 * a * b * sin(gamma)
                 Real area = "1/2" * side1 * side2 * sin[angle];
                 area.Simplify();
                 S.Text = area.ToString();
                 S.TextColor = uneditedColor;
                 P.TextColor = uneditedColor;
-                unknownSide.TextColor = uneditedColor;
+                R.TextColor = uneditedColor;
             }
         }
         else if (knownSideIndexes.Count == 1 && knownAngleIndexes.Count == 3)
