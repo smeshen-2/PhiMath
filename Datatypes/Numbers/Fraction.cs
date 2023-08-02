@@ -252,7 +252,7 @@ public struct Fraction
 
     public static Root Sqrt(Fraction fraction)
     {
-        return new Root(1, fraction.Q, fraction.P * fraction.Q);
+        return new Root(1, fraction.P * fraction.Q, fraction.Q);
     }
 
     public static implicit operator Fraction(string s)

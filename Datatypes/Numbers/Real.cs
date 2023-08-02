@@ -22,16 +22,10 @@ public class Real
     /// </summary>
     public Real(string s)
     {
-        int i = s.IndexOf('+');
-        if(i > 0)
-        {
-            s = s.Replace("-", "+-");
-            Roots = s.Split('+').Select(r => new Root(r)).ToList();
-        }
-        else
-        {
-            Roots = new List<Root>() { new Root(s) };
-        }
+        s = s.Replace(" ", "");
+        if (s[0] == '-') s = "0" + s;
+        s = s.Replace("-", "+-");
+        Roots = s.Split('+').Select(r => new Root(r)).ToList();
     }
 
     public void Simplify()
@@ -134,6 +128,7 @@ public class Real
 
     public override string ToString()
     {
+        if (Roots.Count == 0) return "0";
         return string.Join("+", Roots).Replace("+-", "-");
     }
 

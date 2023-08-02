@@ -14,13 +14,13 @@ public partial class Triangles : ContentPage
         InitializeComponent();
         cos = new Dictionary<int, Root>
         {
-            { 30, "1/2V3" },
-            { 45, "1/2V2" },
+            { 30, "V3/2" },
+            { 45, "V2/2" },
             { 60, "1/2" },
             { 90, "0" },
             { 120, "-1/2" },
-            { 135, "-1/2V2" },
-            { 150, "-1/2V3" }
+            { 135, "-V2/2" },
+            { 150, "-V3/2" }
         };
 
         if (App.Current.RequestedTheme == AppTheme.Light) defaultColor = Colors.Black;

@@ -1,4 +1,6 @@
-﻿namespace Numbers;
+﻿using System.Text.RegularExpressions;
+
+namespace Numbers;
 
 /// <summary>
 /// A number in the form A√B, where A is a Fraction, B is a whole number, B >= 0.
@@ -23,44 +25,71 @@ public struct Root
     }
 
     /// <summary>
-    /// Creates a Root int the form "a√b"
+    /// Creates a Root in the form "a√b"
     /// </summary>
     public Root(int a, int b = 1) : this(new Fraction(a), b)
     {
-        
+
     }
 
     /// <summary>
-    /// Creates a Root int the form "p/q√b"
+    /// Creates a Root in the form "p√b/q"
     /// </summary>
-    public Root(int p, int q, int b = 1) : this(new Fraction(p, q), b)
+    public Root(int p, int b, int q) : this(new Fraction(p, q), b)
     {
 
     }
 
     /// <summary>
-    /// Creates a Root from a string in the form "p/q√b", "p/q", "a√b", "√b" or "a". "V" can be used instead of "√".
+    /// Creates a Root from a string in the form "p√b/q", "√b/q", "p/q", "a√b", "√b" or "a". "V" can be used instead of "√".
     /// </summary>
     public Root(string s)
     {
         s = s.Replace(" ", "").Replace("V", "√");
-        int i = s.IndexOf('√');
-        if(i > -1)
+        Match match = Regex.Match(s, @"(-?\d+)√(\d+)\/(\d+)");
+        if (match.Success)
         {
-            if (i == 0)
-            {
-                s = "1" + s;
-                i = 1;
-            }
-            A = new Fraction(s.Substring(0, i));
-            B = int.Parse(s.Substring(i + 1));
-            if (B < 0) throw new Exception("Argument b in a√b cannot be less than zero.");
+            A = new Fraction(int.Parse(match.Groups[1].Value),
+                int.Parse(match.Groups[3].Value));
+            B = int.Parse(match.Groups[2].Value);
+            return;
         }
-        else
+        match = Regex.Match(s, @"^-?√(\d+)\/(\d+)$");
+        if (match.Success)
+        {
+            A = new Fraction(s[0] == '-' ? -1 : 1, int.Parse(match.Groups[2].Value));
+            B = int.Parse(match.Groups[1].Value);
+            return;
+        }
+        match = Regex.Match(s, @"^-?\d+\/\d+$");
+        if (match.Success)
         {
             A = new Fraction(s);
             B = 1;
+            return;
         }
+        match = Regex.Match(s, @"^(-?\d+)√(\d+)$");
+        if (match.Success)
+        {
+            A = new Fraction(int.Parse(match.Groups[1].Value));
+            B = int.Parse(match.Groups[2].Value);
+            return;
+        }
+        match = Regex.Match(s, @"^-?√(\d+)$");
+        if (match.Success)
+        {
+            A = new Fraction(s[0] == '-' ? -1 : 1, 1);
+            B = int.Parse(match.Groups[1].Value);
+            return;
+        }
+        match = Regex.Match(s, @"^-?\d+$");
+        if (match.Success)
+        {
+            A = match.Value;
+            B = 1;
+            return;
+        }
+        throw new Exception("Invalid string format");
     }
 
     public Root Simplified()
@@ -68,12 +97,12 @@ public struct Root
         int sqrt = (int)Math.Sqrt(B);
         for (int i = sqrt; i > 1; i--)
         {
-            if(B % (i * i) == 0)
+            if (B % (i * i) == 0)
             {
                 return new Root(A * i, B / (i * i));
             }
         }
-        return new Root(A, B);
+        return new Root(A.Simplified(), B);
     }
 
     public override string ToString()
