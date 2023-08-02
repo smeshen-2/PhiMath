@@ -23,7 +23,7 @@ public partial class Triangles : ContentPage
             { 150, "-1/2V3" }
         };
 
-        if (App.Current.UserAppTheme == AppTheme.Light) defaultColor = Colors.Black;
+        if (App.Current.RequestedTheme == AppTheme.Light) defaultColor = Colors.Black;
         else defaultColor = Colors.White;
 
         if (App.Current.Resources.TryGetValue("Secondary", out var colorvalue)) uneditedColor = (Color)colorvalue;
