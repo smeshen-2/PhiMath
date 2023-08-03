@@ -1,4 +1,6 @@
-﻿namespace Numbers;
+﻿using System.Text.RegularExpressions;
+
+namespace Numbers;
 
 /// <summary>
 /// A real number.
@@ -119,11 +121,29 @@ public class Real
         return this * this;
     }
 
+    public Real Copy()
+    {
+        var roots = new List<Root>();
+        roots.AddRange(Roots);
+        return new Real(roots.ToArray());
+    }
+
     public static Real operator /(Real a, Root b)
     {
         Real result = new Real(a.Roots.Select(r => r / b).ToArray());
         result.Simplify();
         return result;
+    }
+
+    public static string operator /(Real a, Real b)
+    {
+        var allRoots = new List<Root>();
+        allRoots.AddRange(a.Roots);
+        allRoots.AddRange(b.Roots);
+        int nod = Fraction.NOD(allRoots.Select(r => r.A.P).ToArray());
+        string result = (a.Copy() / new Root(nod, 1)).ToString()
+            + "/(" + (b.Copy() / new Root(nod, 1)).ToString() + ")";
+        return Regex.Replace(result, @"\((\d+)\)", m => m.Groups[1].Value);
     }
 
     public override string ToString()

@@ -102,7 +102,11 @@ public partial class Triangles : ContentPage
                 Real side2 = sides[knownSideIndexes.Skip(1).First()];
                 int angle = angles[3 - knownSideIndexes.Sum()];
                 Real side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
-
+                // S = 1/2 * a * b * sin(gamma)
+                Real area = "1/2" * side1 * side2 * sin[angle];
+                area.Simplify();
+                S.Text = area.ToString();
+                S.TextColor = uneditedColor;
                 if (side3Squared.Roots.Count == 1)
                 {
                     Real side3 = new Real(Fraction.Sqrt(side3Squared.Roots[0].A).Simplified());
@@ -113,6 +117,19 @@ public partial class Triangles : ContentPage
                     // sine theorem
                     Root bigRadius = side3.Roots[0] / (sin[angle] * "2");
                     R.Text = bigRadius.Simplified().ToString();
+                    // S = p * r
+                    if (perimeter.Roots.Count == 1)
+                    {
+                        Real smallRadius = "2" * area / perimeter.Roots[0];
+                        smallRadius.Simplify();
+                        r.Text = smallRadius.ToString();
+                    }
+                    else
+                    {
+                        var t = "2" * area;
+                        t.Simplify();
+                        r.Text = t / perimeter;
+                    }
                 }
                 else
                 {
@@ -125,15 +142,15 @@ public partial class Triangles : ContentPage
                     var d = sin[angle] * "2";
                     string bigRadius = d == "1" ? side3.ToString() : side3 + "/" + d.ToString();
                     R.Text = bigRadius;
+                    // S = p * r
+                    var t = "2" * area;
+                    t.Simplify();
+                    r.Text = t.ToString() + "/" + P.Text;
                 }
                 unknownSide.TextColor = uneditedColor;
-                // S = 1/2 * a * b * sin(gamma)
-                Real area = "1/2" * side1 * side2 * sin[angle];
-                area.Simplify();
-                S.Text = area.ToString();
-                S.TextColor = uneditedColor;
                 P.TextColor = uneditedColor;
                 R.TextColor = uneditedColor;
+                r.TextColor = uneditedColor;
             }
         }
         else if (knownSideIndexes.Count == 1 && knownAngleIndexes.Count == 3)

@@ -227,6 +227,25 @@ public struct Fraction
         throw new Exception();
     }
 
+    public static int NOD(params int[] numbers)
+    {
+        bool isNOD = false;
+        for (int i = numbers.Min(); i >= 1; i--)
+        {
+            isNOD = true;
+            for (int j = 0; j < numbers.Length; j++)
+            {
+                if (numbers[j] % i != 0)
+                {
+                    isNOD = false;
+                    break;
+                }
+            }
+            if (isNOD) return i;
+        }
+        throw new Exception();
+    }
+
     public static Fraction Min(Fraction a, Fraction b)
     {
         return a < b ? a : b;
