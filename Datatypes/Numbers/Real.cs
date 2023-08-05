@@ -137,6 +137,12 @@ public class Real
 
     public static string operator /(Real a, Real b)
     {
+        if (b.Roots.Count == 1)
+        {
+            var real = a / b.Roots[0];
+            real.Simplify();
+            return real.ToString();
+        }
         var allRoots = new List<Root>();
         allRoots.AddRange(a.Roots);
         allRoots.AddRange(b.Roots);

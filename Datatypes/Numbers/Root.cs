@@ -110,6 +110,7 @@ public struct Root
         if (A.P * B == 0) return "0";
         if (B == 1) return A.ToString();
         if (A == 1) return "√" + B;
+        if (A == -1) return "-√" + B;
         return (A.P != 1 ? A.P.ToString() : "") + $"√{B}" + (A.Q > 1 ? "/" + A.Q : "");
     }
 
@@ -140,7 +141,7 @@ public struct Root
 
     public static Root operator /(Root a, Root b)
     {
-        return a * b.Inverted();
+        return (a * b.Inverted()).Simplified();
     }
 
     public static bool operator ==(Root a, Root b)
