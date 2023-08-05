@@ -4,10 +4,10 @@ namespace PhiMath.Pages;
 
 public partial class Polynomials : ContentPage
 {
-	public Polynomials()
-	{
-		InitializeComponent();
-	}
+    public Polynomials()
+    {
+        InitializeComponent();
+    }
     private void Simplify_Clicked(object sender, EventArgs e)
     {
         string expr = polynomials_entry.Text;
@@ -36,14 +36,20 @@ public partial class Polynomials : ContentPage
                     ", x2 " + (x2 == res[1] ? "= " : "≈ ") + x2;
                 return;
             }
-            if (res.Count == 1)
+            else if (res.Count == 1)
             {
                 double x = Math.Round(res[0], 5);
                 polynomials_output.Text = "x " + (x == res[0] ? "= " : "≈ ") + x;
                 return;
             }
-            if (Polynomial.Simplify(expr).Monomials[0].Coefficient == 0) polynomials_output.Text = "∀x∈ℚ";
-            else polynomials_output.Text = "x∈∅";
+        }
+        catch(AxeQException)
+        {
+            polynomials_output.Text = "∀x∈ℚ";
+        }
+        catch(xeOException)
+        {
+            polynomials_output.Text = "x∈∅";
         }
         catch
         {

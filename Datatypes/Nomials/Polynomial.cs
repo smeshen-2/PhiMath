@@ -1,3 +1,5 @@
+using PhiMath;
+
 namespace Nomials;
 
 public class Polynomial
@@ -243,7 +245,8 @@ public class Polynomial
             else res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1));
             return res;
         }
-        return null;
+        if (p.Monomials[0].Coefficient == 0) throw new AxeQException();
+        else throw new xeOException();
     }
 
     public double GetCoefficientByPower(int power)
