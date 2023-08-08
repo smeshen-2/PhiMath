@@ -6,8 +6,7 @@ namespace PhiMath.Pages;
 public partial class Triangles : ContentPage
 {
     private static Dictionary<int, Root> sin, cos;
-    private static Color defaultColor;
-    private static Color uneditedColor;
+    private static Color defaultColor, uneditedColor;
 
     public Triangles()
     {
@@ -45,18 +44,18 @@ public partial class Triangles : ContentPage
         Real[] sides = new Real[3];
         int[] angles = new int[3];
 
-        if (a.Text != null && a.Text != "" && a.TextColor == defaultColor) sides[0] = new Real(a.Text);
+        if (IsGiven(a)) sides[0] = new Real(a.Text);
         else sides[0] = null;
-        if (b.Text != null && b.Text != "" && b.TextColor == defaultColor) sides[1] = new Real(b.Text);
+        if (IsGiven(b)) sides[1] = new Real(b.Text);
         else sides[1] = null;
-        if (c.Text != null && c.Text != "" && c.TextColor == defaultColor) sides[2] = new Real(c.Text);
+        if (IsGiven(c)) sides[2] = new Real(c.Text);
         else sides[2] = null;
 
-        if (alpha.Text != null && alpha.Text != "" && alpha.TextColor == defaultColor) angles[0] = int.Parse(alpha.Text);
+        if (IsGiven(alpha)) angles[0] = int.Parse(alpha.Text);
         else angles[0] = 0;
-        if (beta.Text != null && beta.Text != "" && beta.TextColor == defaultColor) angles[1] = int.Parse(beta.Text);
+        if (IsGiven(beta)) angles[1] = int.Parse(beta.Text);
         else angles[1] = 0;
-        if (gamma.Text != null && gamma.Text != "" && gamma.TextColor == defaultColor) angles[2] = int.Parse(gamma.Text);
+        if (IsGiven(gamma)) angles[2] = int.Parse(gamma.Text);
         else angles[2] = 0;
 
         var knownSideIndexes = new SortedSet<int>();
@@ -101,20 +100,26 @@ public partial class Triangles : ContentPage
                 Real side2 = sides[knownSideIndexes.Skip(1).First()];
                 int angle = angles[3 - knownSideIndexes.Sum()];
                 Real side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
+
                 // S = 1/2 * a * b * sin(gamma)
                 Real area = "1/2" * side1 * side2 * sin[angle];
                 S.Text = area.ToString();
                 S.TextColor = uneditedColor;
+
                 if (side3Squared.Roots.Count == 1)
                 {
                     Real side3 = new Real(Fraction.Sqrt(side3Squared.Roots[0].A).Simplified());
                     unknownSide.Text = side3.ToString();
+
+                    // getting P
                     Real perimeter = side1 + side2 + side3;
                     P.Text = perimeter.ToString();
-                    // sine theorem
-                    Root bigRadius = side3.Roots[0] / (sin[angle] * "2");
-                    R.Text = bigRadius.Simplified().ToString();
-                    // S = p * r
+
+                    // sine theorem (to get R)
+                    Root bigRadius = side3.Roots[0] / (sin[angle] * "2").Simplified();
+                    R.Text = bigRadius.ToString();
+
+                    // S = p * r (to get r)
                     if (perimeter.Roots.Count == 1)
                     {
                         Real smallRadius = "2" * area / perimeter.Roots[0];
@@ -129,13 +134,17 @@ public partial class Triangles : ContentPage
                 {
                     string side3 = "√(" + side3Squared.ToString() + ")";
                     unknownSide.Text = side3;
+
+                    // getting P
                     Real perimeter = side1 + side2;
                     P.Text = perimeter.ToString() + "+" + side3;
-                    // sine theorem
+
+                    // sine theorem (to get R)
                     var d = sin[angle] * "2";
-                    string bigRadius = d == "1" ? side3.ToString() : side3 + "/" + d.ToString();
+                    string bigRadius = d == "1" ? side3 : side3 + "/" + d.ToString();
                     R.Text = bigRadius;
-                    // S = p * r
+
+                    // S = p * r (to get r)
                     var t = "2" * area;
                     r.Text = t.ToString() + "/(" + P.Text + ")";
                 }
@@ -147,7 +156,7 @@ public partial class Triangles : ContentPage
         }
         else if (knownSideIndexes.Count == 1 && knownAngleIndexes.Count == 3)
         {
-            // sine theorem
+            // sine theorem (to get R)
             var side = sides[knownSideIndexes.First()];
             Real bigRadius = side / (sin[angles[knownSideIndexes.First()]] * "2");
             R.Text = bigRadius.ToString();
@@ -158,5 +167,10 @@ public partial class Triangles : ContentPage
     {
         Entry entry = (Entry)sender;
         entry.TextColor = defaultColor;
+    }
+
+    private static bool IsGiven(Entry e)
+    {
+        return e.Text != null && e.Text != "" && e.TextColor == defaultColor;
     }
 }
