@@ -1,4 +1,4 @@
-using PhiMath;
+using Exceptions;
 
 namespace Nomials;
 
@@ -233,7 +233,7 @@ public class Polynomial
             double b = p.GetCoefficientByPower(1);
             double c = p.GetCoefficientByPower(0);
             double discriminant = b * b - 4 * a * c;
-            if (discriminant < 0) throw new Exception("Cannot solve equation.");
+            if (discriminant < 0) throw new xeOException();
             res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
             res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
             if (res[0] == res[1]) res.Remove(res[0]);
@@ -245,6 +245,7 @@ public class Polynomial
             else res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1));
             return res;
         }
+
         if (p.Monomials[0].Coefficient == 0) throw new AxeQException();
         else throw new xeOException();
     }

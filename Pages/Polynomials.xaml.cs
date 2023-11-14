@@ -1,4 +1,5 @@
 ﻿using Nomials;
+using Exceptions;
 
 namespace PhiMath.Pages;
 
@@ -10,7 +11,17 @@ public partial class Polynomials : ContentPage
     }
     private void Simplify_Clicked(object sender, EventArgs e)
     {
-        string expr = polynomials_entry.Text;
+        string expr = polynomials_entry.Text
+            .Replace("⁰", "^0")
+            .Replace("¹", "^1")
+            .Replace("²", "^2")
+            .Replace("³", "^3")
+            .Replace("⁴", "^4")
+            .Replace("⁵", "^5")
+            .Replace("⁶", "^6")
+            .Replace("⁷", "^7")
+            .Replace("⁸", "^8")
+            .Replace("⁹", "^9");
         try
         {
             polynomials_output.Text = Polynomial.Simplify(expr).ToString();
@@ -24,7 +35,18 @@ public partial class Polynomials : ContentPage
 
     private void Solve_Clicked(object sender, EventArgs e)
     {
-        string expr = polynomials_entry.Text;
+        string expr = polynomials_entry.Text ?? "";
+        expr = expr
+            .Replace("⁰", "^0")
+            .Replace("¹", "^1")
+            .Replace("²", "^2")
+            .Replace("³", "^3")
+            .Replace("⁴", "^4")
+            .Replace("⁵", "^5")
+            .Replace("⁶", "^6")
+            .Replace("⁷", "^7")
+            .Replace("⁸", "^8")
+            .Replace("⁹", "^9");
         try
         {
             List<double> res = Polynomial.Solve(expr);
