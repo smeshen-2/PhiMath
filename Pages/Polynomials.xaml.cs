@@ -94,8 +94,7 @@ public partial class Polynomials : ContentPage
                 counter++;
             }
             output = output.Substring(0, output.Length - 1);
-            //output += (res[counter - 1] == x ? " = " : " ≈ ") + x + "; ";
-            output += " = " + x + "; ";
+            output += (res[counter - 2] == x ? " = " : " ≈ ") + x + "; ";
         }
         output = output.Substring(0, output.Length - 2);
         if (res.Count != p.Power) output += "...";
