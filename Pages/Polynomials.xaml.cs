@@ -62,32 +62,6 @@ public partial class Polynomials : ContentPage
         catch
         {
             polynomials_output.Text = "Invalid expression";
-            try
-            {
-                polynomials_output.Text = "";
-
-                string expr = polynomials_entry.Text
-               .Replace("⁰", "^0")
-               .Replace("¹", "^1")
-               .Replace("²", "^2")
-               .Replace("³", "^3")
-               .Replace("⁴", "^4")
-               .Replace("⁵", "^5")
-               .Replace("⁶", "^6")
-               .Replace("⁷", "^7")
-               .Replace("⁸", "^8")
-               .Replace("⁹", "^9");
-                List<double> res = Polynomial.Solve(expr);
-
-                foreach (var item in res)
-                {
-                    polynomials_output.Text += item + "; ";
-                }
-            }
-            catch
-            {
-                polynomials_output.Text = "Invalid";
-            }
             return;
         }
     }
