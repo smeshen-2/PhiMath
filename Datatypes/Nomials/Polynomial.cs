@@ -1,10 +1,12 @@
 using Exceptions;
+using System.Runtime.CompilerServices;
 
 namespace Nomials;
 
 public class Polynomial
 {
     public int Count => Monomials.Count;
+    public int Power => Monomials[0].Power;
     public List<Monomial> Monomials { get; private set; } = new List<Monomial>();
     public Polynomial() { Monomials = new List<Monomial>(); }
 
@@ -80,7 +82,7 @@ public class Polynomial
         p.Sort();
         Monomials.Clear();
         double coeff = 0;
-        int pow = p.Count == 0 ? 0 : p.Monomials[0].Power;
+        int pow = p.Count == 0 ? 0 : p.Power;
         foreach (var item in p.Monomials)
         {
             if (item.Power == pow) coeff += item.Coefficient;
@@ -97,7 +99,6 @@ public class Polynomial
         return this;
     }
 
-    // turns an expression into a RPN one
     public static string ToRPN(string expr)
     {
         foreach (var item in expr)
@@ -218,7 +219,7 @@ public class Polynomial
         return operands.Pop().Sort();
     }
 
-    // gets the values of x where the expression would equal 0, can also solve equations (power <= 2)
+    public static List<double> Solve(Polynomial p) => Solve(p.ToString());
     public static List<double> Solve(string expr)
     {
         expr = expr.Replace(" ", "");
@@ -226,8 +227,55 @@ public class Polynomial
         if (expr.Contains('=')) expr = expr.Split('=')[0] + "-(" + expr.Split('=')[1] + ")";
         Polynomial p = Simplify(expr);
         List<double> res = new List<double>();
-        if (p.Monomials[0].Power > 2) throw new Exception("Cannot solve equation.");
-        if (p.Monomials[0].Power == 2)
+
+        if (p.Power > 2)
+        {
+            if (p.Monomials[p.Count - 1].Power != 0)
+            {
+                p /= new Monomial(1, 1);
+                res.AddRange(Solve(p));
+                res.Add(0);
+                return res;
+            }
+            if (p.Count == 2)
+            {
+                res.Add(Math.Pow(p.Monomials[1].Coefficient / p.Monomials[0].Coefficient, 1 / (float)p.Power));
+                return res;
+            }
+            int first = (int)p.GetCoefficientByPower(p.Power);
+            int last = (int)p.GetCoefficientByPower(0);
+            HashSet<int> divisorsFirst = new() { 1 };
+            HashSet<int> divisorsLast = new() { 1, -1 };
+
+            if (first < 0) first = -first;
+            if (last < 0) last = -last;
+            for (int i = 2; i <= first; i++)
+                if (first % i == 0)
+                    divisorsFirst.Add(i);
+            for (int i = 2; i <= last; i++)
+                if (last % i == 0)
+                {
+                    divisorsLast.Add(i);
+                    divisorsLast.Add(-i);
+                }
+            foreach (var dividend in divisorsLast)
+                foreach (var divisor in divisorsFirst)
+                {
+                    float possibleSolution = (dividend / (float)divisor);
+                    if (p.WhereXEquals(possibleSolution) == 0)
+                    {
+                        string solution = "x" + (possibleSolution < 0 ? " + " : " - ") + Math.Abs(possibleSolution);
+                        p /= Polynomial.Parse(solution, false);
+                        res.Add(possibleSolution);
+                    }
+                }
+            if (p.Power > 2) return res;
+            try { res.AddRange(Solve(p.ToString())); }
+            catch (xeOException) { }
+            return res;
+        }
+
+        if (p.Power == 2)
         {
             double a = p.GetCoefficientByPower(2);
             double b = p.GetCoefficientByPower(1);
@@ -236,10 +284,10 @@ public class Polynomial
             if (discriminant < 0) throw new xeOException();
             res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
             res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
-            if (res[0] == res[1]) res.Remove(res[0]);
             return res;
         }
-        if (p.Monomials[0].Power == 1)
+
+        if (p.Power == 1)
         {
             if (p.Count == 1) res.Add(0);
             else res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1));
@@ -248,6 +296,16 @@ public class Polynomial
 
         if (p.Monomials[0].Coefficient == 0) throw new AxeQException();
         else throw new xeOException();
+    }
+
+    public double WhereXEquals(double x)
+    {
+        double res = 0;
+        foreach (var item in Monomials)
+        {
+            res += item.WhereXEquals(x);
+        }
+        return res;
     }
 
     public double GetCoefficientByPower(int power)
@@ -299,7 +357,7 @@ public class Polynomial
         Polynomial res = new Polynomial();
         Polynomial p = p1.Copy();
         Polynomial t = new Polynomial();
-        while (p.Monomials[0].Power >= p2.Monomials[0].Power)
+        while (p.Power >= p2.Power)
         {
             res.Add(p.Monomials[0] / p2.Monomials[0]);
             t = res.Monomials[res.Count - 1] * p2;
@@ -311,7 +369,7 @@ public class Polynomial
     {
         Polynomial p = p1.Copy();
         Polynomial t = new Polynomial();
-        while (p.Monomials[0].Power >= p2.Monomials[0].Power)
+        while (p.Power >= p2.Power)
         {
             t = (p.Monomials[0] / p2.Monomials[0]) * p2;
             p -= t;

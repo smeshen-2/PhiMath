@@ -35,7 +35,7 @@ public class Monomial
     {
         foreach (var item in s)
         {
-            if (!"^x0123456789 ".Contains(item)) throw new Exception("Invalid symbols.");
+            if (!"^-x,._0123456789 ".Contains(item)) throw new Exception("Invalid symbols.");
         }
         double coeff = 1;
         int power = 1;
@@ -51,6 +51,11 @@ public class Monomial
         if (s.Contains('^'))
             power = int.Parse(s.Split('^')[1]);
         return new Monomial(coeff, power);
+    }
+
+    public double WhereXEquals(double x)
+    {
+        return Coefficient * Math.Pow(x, Power);
     }
 
     public static Polynomial operator +(Monomial m1, Monomial m2)

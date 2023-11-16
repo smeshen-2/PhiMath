@@ -11,19 +11,19 @@ public partial class Polynomials : ContentPage
     }
     private void Simplify_Clicked(object sender, EventArgs e)
     {
-        string expr = polynomials_entry.Text
-            .Replace("⁰", "^0")
-            .Replace("¹", "^1")
-            .Replace("²", "^2")
-            .Replace("³", "^3")
-            .Replace("⁴", "^4")
-            .Replace("⁵", "^5")
-            .Replace("⁶", "^6")
-            .Replace("⁷", "^7")
-            .Replace("⁸", "^8")
-            .Replace("⁹", "^9");
         try
         {
+            string expr = polynomials_entry.Text
+                .Replace("⁰", "^0")
+                .Replace("¹", "^1")
+                .Replace("²", "^2")
+                .Replace("³", "^3")
+                .Replace("⁴", "^4")
+                .Replace("⁵", "^5")
+                .Replace("⁶", "^6")
+                .Replace("⁷", "^7")
+                .Replace("⁸", "^8")
+                .Replace("⁹", "^9");
             polynomials_output.Text = Polynomial.Simplify(expr).ToString();
         }
         catch
@@ -35,48 +35,96 @@ public partial class Polynomials : ContentPage
 
     private void Solve_Clicked(object sender, EventArgs e)
     {
-        string expr = polynomials_entry.Text ?? "";
-        expr = expr
-            .Replace("⁰", "^0")
-            .Replace("¹", "^1")
-            .Replace("²", "^2")
-            .Replace("³", "^3")
-            .Replace("⁴", "^4")
-            .Replace("⁵", "^5")
-            .Replace("⁶", "^6")
-            .Replace("⁷", "^7")
-            .Replace("⁸", "^8")
-            .Replace("⁹", "^9");
+        polynomials_output.Text = "";
         try
         {
-            List<double> res = Polynomial.Solve(expr);
-            if (res.Count == 2)
-            {
-                double x1 = Math.Round(res[0], 5);
-                double x2 = Math.Round(res[1], 5);
-                polynomials_output.Text = "x1 " + (x1 == res[0] ? "= " : "≈ ") + x1 +
-                    ", x2 " + (x2 == res[1] ? "= " : "≈ ") + x2;
-                return;
-            }
-            else if (res.Count == 1)
-            {
-                double x = Math.Round(res[0], 5);
-                polynomials_output.Text = "x " + (x == res[0] ? "= " : "≈ ") + x;
-                return;
-            }
+            string expr = polynomials_entry.Text
+                .Replace("⁰", "^0")
+                .Replace("¹", "^1")
+                .Replace("²", "^2")
+                .Replace("³", "^3")
+                .Replace("⁴", "^4")
+                .Replace("⁵", "^5")
+                .Replace("⁶", "^6")
+                .Replace("⁷", "^7")
+                .Replace("⁸", "^8")
+                .Replace("⁹", "^9");
+            polynomials_output.Text = GetSolveOutput(Polynomial.Simplify(expr), Polynomial.Solve(expr));
         }
-        catch(AxeQException)
+        catch (AxeQException)
         {
             polynomials_output.Text = "∀x∈ℚ";
         }
-        catch(xeOException)
+        catch (xeOException)
         {
             polynomials_output.Text = "x∈∅";
         }
         catch
         {
             polynomials_output.Text = "Invalid expression";
+            try
+            {
+                polynomials_output.Text = "";
+
+                string expr = polynomials_entry.Text
+               .Replace("⁰", "^0")
+               .Replace("¹", "^1")
+               .Replace("²", "^2")
+               .Replace("³", "^3")
+               .Replace("⁴", "^4")
+               .Replace("⁵", "^5")
+               .Replace("⁶", "^6")
+               .Replace("⁷", "^7")
+               .Replace("⁸", "^8")
+               .Replace("⁹", "^9");
+                List<double> res = Polynomial.Solve(expr);
+
+                foreach (var item in res)
+                {
+                    polynomials_output.Text += item + "; ";
+                }
+            }
+            catch
+            {
+                polynomials_output.Text = "Invalid";
+            }
             return;
         }
+    }
+    static string GetSolveOutput(Polynomial p, List<double> res)
+    {
+        res.Sort();
+        double x;
+        if (res.Count == 1)
+        {
+            x = Math.Round(res[0], 5);
+            if (p.Power > 2) return "x1 " + (x == res[0] ? "= " : "≈ ") + x + "...";
+            return "x " + (x == res[0] ? "= " : "≈ ") + x;
+        }
+        Dictionary<double, int> solutions = new Dictionary<double, int>();
+        for (int i = 0; i < res.Count; i++)
+        {
+            if (res[i] == -0) res[i] = 0;
+            if (!solutions.ContainsKey(res[i])) solutions.Add(res[i], 1);
+            else solutions[res[i]]++;
+        }
+        string output = "";
+        int counter = 1;
+        foreach (var item in solutions)
+        {
+            x = Math.Round(item.Key, 5);
+            output += "x";
+            for(int i = 0; i < item.Value; i++)
+            {
+                output += counter + ",";
+                counter++;
+            }
+            output = output.Substring(0, output.Length - 1);
+            //output += (res[counter - 1] == x ? " = " : " ≈ ") + x + "; ";
+            output += " = " + x + "; ";
+        }
+        output = output.Substring(0, output.Length - 2);
+        if (res.Count != p.Power) output += "...";
+        return output;
     }
 }
