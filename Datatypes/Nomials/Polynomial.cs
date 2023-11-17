@@ -239,11 +239,12 @@ public class Polynomial
         if (p.Power == 1) { res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1)); return res; }
         if (p.Power == 2) return SolveQuadratic(p);
 
-        if (p.Count == 2) // ax^n + b = 0 -> x = nth root of -b/a
+        if (p.Count == 2) // ax^n + b = 0 -> x = +-nth root of -b/a
         {
             double t = -p.Monomials[1].Coefficient / p.Monomials[0].Coefficient;
             if (t > 0)
             {
+                if (p.Power % 2 == 0) res.Add(-Math.Pow(t, 1 / (float)p.Power));
                 res.Add(Math.Pow(t, 1 / (float)p.Power));
                 return res;
             }
