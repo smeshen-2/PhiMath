@@ -9,7 +9,7 @@ public partial class Polynomials : ContentPage
     {
         InitializeComponent();
     }
-    private void Simplify_Clicked(object sender, EventArgs e)
+    private void Normalize_Clicked(object sender, EventArgs e)
     {
         try
         {
@@ -24,7 +24,7 @@ public partial class Polynomials : ContentPage
                 .Replace("⁷", "^7")
                 .Replace("⁸", "^8")
                 .Replace("⁹", "^9");
-            polynomials_output.Text = Polynomial.Simplify(expr).ToString();
+            polynomials_output.Text = Polynomial.Normalize(expr).ToString();
         }
         catch
         {
@@ -49,7 +49,7 @@ public partial class Polynomials : ContentPage
                 .Replace("⁷", "^7")
                 .Replace("⁸", "^8")
                 .Replace("⁹", "^9");
-            polynomials_output.Text = GetSolveOutput(Polynomial.Simplify(expr), Polynomial.Solve(expr));
+            polynomials_output.Text = GetSolveOutput(Polynomial.ParseEquation(expr), Polynomial.Solve(expr), 4);
         }
         catch (AxeQException)
         {
@@ -65,14 +65,13 @@ public partial class Polynomials : ContentPage
             return;
         }
     }
-    static string GetSolveOutput(Polynomial p, List<double> res)
+    static string GetSolveOutput(Polynomial p, List<double> res, int precision)
     {
-        res.Sort();
         double x;
         if (res.Count == 1)
         {
-            x = Math.Round(res[0], 5);
-            if (p.Power > 2) return "x1 " + (x == res[0] ? "= " : "≈ ") + x + "...";
+            x = Math.Round(res[0], precision);
+            if (p.Power > 2 && p.Count > 2) return "x1 " + (x == res[0] ? "= " : "≈ ") + x + "...";
             return "x " + (x == res[0] ? "= " : "≈ ") + x;
         }
         Dictionary<double, int> solutions = new Dictionary<double, int>();
@@ -86,7 +85,7 @@ public partial class Polynomials : ContentPage
         int counter = 1;
         foreach (var item in solutions)
         {
-            x = Math.Round(item.Key, 5);
+            x = Math.Round(item.Key, precision);
             output += "x";
             for(int i = 0; i < item.Value; i++)
             {
@@ -97,7 +96,7 @@ public partial class Polynomials : ContentPage
             output += (res[counter - 2] == x ? " = " : " ≈ ") + x + "; ";
         }
         output = output.Substring(0, output.Length - 2);
-        if (res.Count != p.Power) output += "...";
+        // if (res.Count != p.Power) output += "...";
         return output;
     }
 }

@@ -78,7 +78,7 @@ public class Polynomial
     // sorts polynomial and does all possible additions and subtractions
     public Polynomial Normalize()
     {
-        Polynomial p = this.Copy();
+        Polynomial p = Copy();
         p.Sort();
         Monomials.Clear();
         double coeff = 0;
@@ -170,7 +170,7 @@ public class Polynomial
     }
 
     // turns an expression into a single, normalized polynomial
-    public static Polynomial Simplify(string expr)
+    public static Polynomial Normalize(string expr)
     {
         string[] arrExpr = ToRPN(expr).Split();
         Stack<Polynomial> operands = new Stack<Polynomial>();
@@ -209,93 +209,110 @@ public class Polynomial
                         p *= pCopy;
                         pow--;
                     }
-                    operands.Push(pow == 0 ? Polynomial.Parse("1", false) : p);
+                    operands.Push(pow == 0 ? Parse("1", false) : p);
                     break;
                 default:
-                    operands.Push(Polynomial.Parse(item, false));
+                    operands.Push(Parse(item, false));
                     break;
             }
         }
         return operands.Pop().Sort();
     }
 
-    public static List<double> Solve(Polynomial p) => Solve(p.ToString());
-    public static List<double> Solve(string expr)
+    public static List<double> Solve(string expr) => Solve(ParseEquation(expr));
+    public static List<double> Solve(Polynomial polynomial)
+    {
+        Polynomial p = polynomial.Copy();
+        p.Normalize();
+        List<double> res = new List<double>();
+
+        if (p.Monomials[p.Count - 1].Power != 0)
+        {
+            p /= new Monomial(1, 1);
+            res.Add(0);
+            try { res.AddRange(Solve(p)); } catch (xeOException) { }
+            res.Sort();
+            return res;
+        }
+
+        if (p.Power == 0) throw p.Monomials[0].Coefficient == 0 ? new AxeQException() : new xeOException();
+        if (p.Power == 1) { res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1)); return res; }
+        if (p.Power == 2) return SolveQuadratic(p);
+
+        if (p.Count == 2) // ax^n + b = 0 -> x = nth root of -b/a
+        {
+            double t = -p.Monomials[1].Coefficient / p.Monomials[0].Coefficient;
+            if (t > 0)
+            {
+                res.Add(Math.Pow(t, 1 / (float)p.Power));
+                return res;
+            }
+            if (p.Power % 2 == 1)
+            {
+                t = -t;
+                res.Add(-Math.Pow(t, 1 / (float)p.Power));
+                return res;
+            }
+            throw new xeOException();
+        }
+
+        int first = (int)p.GetCoefficientByPower(p.Power);
+        int last = (int)p.GetCoefficientByPower(0);
+        HashSet<int> divisorsFirst = new HashSet<int>() { 1 };
+        HashSet<int> divisorsLast = new HashSet<int>() { 1, -1 };
+
+        if (first < 0) first = -first;
+        if (last < 0) last = -last;
+        for (int i = 2; i <= first; i++)
+            if (first % i == 0)
+                divisorsFirst.Add(i);
+        for (int i = 2; i <= last; i++)
+            if (last % i == 0)
+            {
+                divisorsLast.Add(i);
+                divisorsLast.Add(-i);
+            }
+        foreach (var dividend in divisorsLast)
+            foreach (var divisor in divisorsFirst)
+            {
+                float possibleSolution = (dividend / (float)divisor);
+                while (p.WhereXEquals(possibleSolution) == 0)
+                {
+                    string solution = "x" + (possibleSolution < 0 ? " + " : " - ") + Math.Abs(possibleSolution);
+                    p /= Parse(solution, false);
+                    res.Add(possibleSolution);
+                }
+            }
+        // finishes the job if there is a quadratic equation left
+        // allows the quadratic equation to have no solutions since the overall equation has at least one
+        if (p.Power == 2)
+        {
+            try { res.AddRange(SolveQuadratic(p)); }
+            catch (xeOException) { }
+        }
+        res.Sort();
+        return res;
+    }
+
+    private static List<double> SolveQuadratic(Polynomial p)
+    {
+        List<double> res = new List<double>();
+        double a = p.GetCoefficientByPower(2);
+        double b = p.GetCoefficientByPower(1);
+        double c = p.GetCoefficientByPower(0);
+        double discriminant = b * b - 4 * a * c;
+        if (discriminant < 0) throw new xeOException();
+        res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
+        res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
+        return res;
+    }
+
+    public static Polynomial ParseEquation(string expr)
     {
         expr = expr.Replace(" ", "");
         if (expr.Count(c => c == '=') > 1) throw new Exception();
         if (expr.Contains('=')) expr = expr.Split('=')[0] + "-(" + expr.Split('=')[1] + ")";
-        Polynomial p = Simplify(expr);
-        List<double> res = new List<double>();
-
-        if (p.Power > 2)
-        {
-            if (p.Monomials[p.Count - 1].Power != 0)
-            {
-                p /= new Monomial(1, 1);
-                res.AddRange(Solve(p));
-                res.Add(0);
-                return res;
-            }
-            if (p.Count == 2)
-            {
-                res.Add(Math.Pow(p.Monomials[1].Coefficient / p.Monomials[0].Coefficient, 1 / (float)p.Power));
-                return res;
-            }
-            int first = (int)p.GetCoefficientByPower(p.Power);
-            int last = (int)p.GetCoefficientByPower(0);
-            HashSet<int> divisorsFirst = new() { 1 };
-            HashSet<int> divisorsLast = new() { 1, -1 };
-
-            if (first < 0) first = -first;
-            if (last < 0) last = -last;
-            for (int i = 2; i <= first; i++)
-                if (first % i == 0)
-                    divisorsFirst.Add(i);
-            for (int i = 2; i <= last; i++)
-                if (last % i == 0)
-                {
-                    divisorsLast.Add(i);
-                    divisorsLast.Add(-i);
-                }
-            foreach (var dividend in divisorsLast)
-                foreach (var divisor in divisorsFirst)
-                {
-                    float possibleSolution = (dividend / (float)divisor);
-                    if (p.WhereXEquals(possibleSolution) == 0)
-                    {
-                        string solution = "x" + (possibleSolution < 0 ? " + " : " - ") + Math.Abs(possibleSolution);
-                        p /= Polynomial.Parse(solution, false);
-                        res.Add(possibleSolution);
-                    }
-                }
-            if (p.Power > 2) return res;
-            try { res.AddRange(Solve(p.ToString())); }
-            catch (xeOException) { }
-            return res;
-        }
-
-        if (p.Power == 2)
-        {
-            double a = p.GetCoefficientByPower(2);
-            double b = p.GetCoefficientByPower(1);
-            double c = p.GetCoefficientByPower(0);
-            double discriminant = b * b - 4 * a * c;
-            if (discriminant < 0) throw new xeOException();
-            res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
-            res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
-            return res;
-        }
-
-        if (p.Power == 1)
-        {
-            if (p.Count == 1) res.Add(0);
-            else res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1));
-            return res;
-        }
-
-        if (p.Monomials[0].Coefficient == 0) throw new AxeQException();
-        else throw new xeOException();
+        return Normalize(expr);
     }
 
     public double WhereXEquals(double x)

@@ -14,10 +14,10 @@
                AbsoluteLayout.LayoutBounds="0.5, 0.225, 1, 0.2"
                HorizontalTextAlignment="Center"
                FontSize="14"/>
-        <Button Text="Simplify"
+        <Button Text="Normalize"
                 AbsoluteLayout.LayoutFlags="All"
                 AbsoluteLayout.LayoutBounds="0.5, 0.3, 0.5, 0.15"
-                Clicked="Simplify_Clicked"/>
+                Clicked="Normalize_Clicked"/>
         <Button Text="Solve"
                 AbsoluteLayout.LayoutFlags="All"
                 AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.15"
