@@ -11,59 +11,28 @@ public partial class Polynomials : ContentPage
     }
     private void Normalize_Clicked(object sender, EventArgs e)
     {
-        try
-        {
-            string expr = polynomials_entry.Text
-                .Replace("⁰", "^0")
-                .Replace("¹", "^1")
-                .Replace("²", "^2")
-                .Replace("³", "^3")
-                .Replace("⁴", "^4")
-                .Replace("⁵", "^5")
-                .Replace("⁶", "^6")
-                .Replace("⁷", "^7")
-                .Replace("⁸", "^8")
-                .Replace("⁹", "^9");
-            polynomials_output.Text = Polynomial.Normalize(expr).ToString();
-        }
-        catch
-        {
-            polynomials_output.Text = "Invalid expression";
-            return;
-        }
+        string expr;
+        try { expr = polynomials_entry.Text; }
+        catch { polynomials_output.Text = "Invalid input"; return; }
+
+        try { polynomials_output.Text = Polynomial.Normalize(expr).ToString(); }
+        catch (DivideByPolynomialException ex) { polynomials_output.Text = ex.Message; }
+        catch (ArgumentException) { polynomials_output.Text = "Invalid input"; }
+        catch { polynomials_output.Text = "Something went wrong..."; }
     }
 
     private void Solve_Clicked(object sender, EventArgs e)
     {
         polynomials_output.Text = "";
-        try
-        {
-            string expr = polynomials_entry.Text
-                .Replace("⁰", "^0")
-                .Replace("¹", "^1")
-                .Replace("²", "^2")
-                .Replace("³", "^3")
-                .Replace("⁴", "^4")
-                .Replace("⁵", "^5")
-                .Replace("⁶", "^6")
-                .Replace("⁷", "^7")
-                .Replace("⁸", "^8")
-                .Replace("⁹", "^9");
-            polynomials_output.Text = GetSolveOutput(Polynomial.ParseEquation(expr), Polynomial.Solve(expr), 4);
-        }
-        catch (AxeQException)
-        {
-            polynomials_output.Text = "∀x∈ℚ";
-        }
-        catch (xeOException)
-        {
-            polynomials_output.Text = "x∈∅";
-        }
-        catch
-        {
-            polynomials_output.Text = "Invalid expression";
-            return;
-        }
+        string expr;
+        try { expr = polynomials_entry.Text; }
+        catch { polynomials_output.Text = "Invalid input"; return; }
+
+        try { polynomials_output.Text = GetSolveOutput(Polynomial.ParseEquation(expr), Polynomial.Solve(expr), 4); }
+        catch (xException ex) { polynomials_output.Text = ex.Message; }
+        catch (DivideByPolynomialException ex) { polynomials_output.Text = ex.Message; }
+        catch (ArgumentException) { polynomials_output.Text = "Invalid input"; }
+        catch { polynomials_output.Text = "Something went wrong..."; }
     }
     static string GetSolveOutput(Polynomial p, List<double> res, int precision)
     {
@@ -87,13 +56,13 @@ public partial class Polynomials : ContentPage
         {
             x = Math.Round(item.Key, precision);
             output += "x";
-            for(int i = 0; i < item.Value; i++)
+            for (int i = 0; i < item.Value; i++)
             {
                 output += counter + ",";
                 counter++;
             }
             output = output.Substring(0, output.Length - 1);
-            output += (res[counter - 2] == x ? " = " : " ≈ ") + x + "; ";
+            output += (Math.Round(res[counter - 2], 7) == x ? " = " : " ≈ ") + x + "; ";
         }
         output = output.Substring(0, output.Length - 2);
         // if (res.Count != p.Power) output += "...";

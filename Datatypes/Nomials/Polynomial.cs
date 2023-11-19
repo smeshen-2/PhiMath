@@ -1,5 +1,4 @@
-using Exceptions;
-using System.Runtime.CompilerServices;
+﻿using Exceptions;
 
 namespace Nomials;
 
@@ -19,6 +18,7 @@ public class Polynomial
         }
         if (normalize) Normalize();
     }
+    public Polynomial(Monomial mono) { Monomials.Add(mono); }
 
     // normalizes unless told otherwise
     public static Polynomial Parse(string s, bool normalize = true)
@@ -101,10 +101,25 @@ public class Polynomial
 
     public static string ToRPN(string expr)
     {
-        foreach (var item in expr)
+        string s = expr;
+        bool inPower = false;
+        int offset = 0;
+        for (int i = 0; i < expr.Length; i++)
         {
-            if (!"(+*^-/)x,._0123456789 ".Contains(item)) throw new Exception("Invalid symbols.");
+            if ("⁰¹²³⁴⁵⁶⁷⁸⁹".Contains(expr[i]))
+            {
+                if (!inPower)
+                {
+                    s = s.Insert(i + offset, "^");
+                    offset++;
+                }
+                inPower = true;
+                s = s.Insert(i + offset, Monomial.FromSuperscript(expr[i].ToString()).ToString() ?? "").Remove(i + offset + 1, 1);
+            }
+            else inPower = false;
+            if (!"(+*^-/)x,._0123456789⁰¹²³⁴⁵⁶⁷⁸⁹ ".Contains(expr[i])) throw new ArgumentException();
         }
+        expr = s;
         expr = "( " + expr.Replace("+", " + ").Replace("-", " - ")
             .Replace("*", " * ").Replace("/", " / ")
             .Replace("(", " ( ").Replace(")", " ) ")
@@ -188,28 +203,40 @@ public class Polynomial
                     operands.Push(operands.Pop() * operands.Pop());
                     break;
                 case "/":
-                    Monomial t;
-                    try
-                    {
-                        t = Monomial.Parse(operands.Pop().ToString());
-                    }
-                    catch
-                    {
-                        throw new Exception("Divisor cannot be a polynomial.");
-                    }
-                    if (t.Coefficient == 0) throw new Exception("Cannot divide by 0.");
-                    operands.Push(operands.Pop() / t);
+                    Monomial divisor;
+                    try { divisor = Monomial.Parse(operands.Pop().ToString()); }
+                    catch { throw new DivideByPolynomialException(); }
+
+                    if (divisor.Coefficient == 0) throw new DivideByZeroException();
+                    operands.Push(operands.Pop() / divisor);
                     break;
                 case "^":
                     int pow = int.Parse(operands.Pop().ToString());
                     Polynomial p = operands.Pop();
+                    if (pow == 0) { operands.Push(Parse("1", false)); break; }
+                    if (pow == 1) { operands.Push(p); break; }
+
+                    if (pow < 0)
+                    {
+                        if (p.Count > 1) throw new DivideByPolynomialException();
+                        Monomial m = p.Monomials[0];
+                        Monomial mCopy = m.Copy();
+                        while (pow < -1)
+                        {
+                            m *= mCopy;
+                            pow++;
+                        }
+                        operands.Push(new Polynomial(new Monomial(1, 0) / m));
+                        break;
+                    }
+
                     Polynomial pCopy = p.Copy();
                     while (pow > 1)
                     {
                         p *= pCopy;
                         pow--;
                     }
-                    operands.Push(pow == 0 ? Parse("1", false) : p);
+                    operands.Push(p);
                     break;
                 default:
                     operands.Push(Parse(item, false));
@@ -226,7 +253,16 @@ public class Polynomial
         p.Normalize();
         List<double> res = new List<double>();
 
-        if (p.Monomials[p.Count - 1].Power != 0)
+        if (p.Monomials[p.Count - 1].Power < 0)
+        {
+            p *= new Monomial(1, 1);
+            res.AddRange(Solve(p));
+            res.RemoveAll(x => x == 0);
+            if (res.Count == 0) throw new UnsolvableException();
+            res.Sort();
+            return res;
+        }
+        if (p.Monomials[p.Count - 1].Power > 0)
         {
             p /= new Monomial(1, 1);
             res.Add(0);
@@ -311,7 +347,7 @@ public class Polynomial
     public static Polynomial ParseEquation(string expr)
     {
         expr = expr.Replace(" ", "");
-        if (expr.Count(c => c == '=') > 1) throw new Exception();
+        if (expr.Count(c => c == '=') > 1) throw new ArgumentException();
         if (expr.Contains('=')) expr = expr.Split('=')[0] + "-(" + expr.Split('=')[1] + ")";
         return Normalize(expr);
     }
@@ -328,8 +364,8 @@ public class Polynomial
 
     public double GetCoefficientByPower(int power)
     {
-        Monomial m = Monomials.Find(n => n.Power == power);
-        return m is null ? 0 : m.Coefficient;
+        Monomial m = Monomials.Find(n => n.Power == power) ?? new Monomial(0, 0);
+        return m.Coefficient;
     }
 
     public override string ToString()

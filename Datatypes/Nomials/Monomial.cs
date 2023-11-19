@@ -1,3 +1,5 @@
+﻿using System.Text.RegularExpressions;
+
 namespace Nomials;
 
 public class Monomial
@@ -20,22 +22,45 @@ public class Monomial
     {
         if (Power == 0) return Coefficient.ToString();
         if (Coefficient == 0) return "0";
-        if (Power == 1)
+
+        string res = "";
+        if (Coefficient == 1) res += "x";
+        else if (Coefficient == -1) res += "-x";
+        else res += Coefficient + "x";
+
+        if (Power == 1) return res;
+        if (Power < 0) return res + $"^({Power})";
+        return res + $"{ToSuperscript(Power)}";
+    }
+
+    public static string? ToSuperscript(string s) => ToSuperscript(int.Parse(s));
+    public static string? ToSuperscript(int n)
+    {
+        if (n < 0) return null;
+        string s = n.ToString();
+        s = s.Replace('1', '¹').Replace('2', '²').Replace('3', '³');
+        foreach (char c in s)
+            if (c == '0' || (c >= '4' && c <= '9'))
+                s = s.Replace(c, (char)(c + 8256));
+        return s;
+    }
+    public static int? FromSuperscript(string s)
+    {
+        foreach (char c in s)
         {
-            if (Coefficient == 1) return "x";
-            if (Coefficient == -1) return "-x";
-            return Coefficient + "x";
+            if (!"⁰¹²³⁴⁵⁶⁷⁸⁹".Contains(c)) return null;
+            if (c == '⁰' || (c >= '⁴' && c <= '⁹'))
+                s = s.Replace(c, (char)(c - 8256));
         }
-        if (Coefficient == 1) return "x^" + Power;
-        if (Coefficient == -1) return "-x^" + Power;
-        return $"{Coefficient}x^{Power}";
+        s = s.Replace('¹', '1').Replace('²', '2').Replace('³', '3');
+        return int.Parse(s);
     }
 
     public static Monomial Parse(string s)
     {
-        foreach (var item in s)
+        foreach (char c in s)
         {
-            if (!"^-x,._0123456789 ".Contains(item)) throw new Exception("Invalid symbols.");
+            if (!"^-x,._0123456789⁰¹²³⁴⁵⁶⁷⁸⁹ ".Contains(c)) throw new ArgumentException();
         }
         double coeff = 1;
         int power = 1;
@@ -49,7 +74,13 @@ public class Monomial
         if (!(s[0] == 'x'))
             coeff *= double.Parse(s.Split('x')[0]);
         if (s.Contains('^'))
-            power = int.Parse(s.Split('^')[1]);
+        {
+            string pow = s.Split('x')[1];
+            pow = pow.Substring(1, pow.Length - 1);
+            if (Regex.Match(pow, @"\(-?\d+\)").Success) pow = pow.Substring(1, pow.Length - 2);
+            power = int.Parse(pow);
+        }
+        else if (s.Split('x')[1] != "") power = FromSuperscript(s.Split('x')[1]) ?? throw new ArgumentException();
         return new Monomial(coeff, power);
     }
 
