@@ -18,18 +18,9 @@
 				AbsoluteLayout.LayoutFlags="All"
 				AbsoluteLayout.LayoutBounds="0.2, 0.3, 0.33, 0.15"
 				Clicked="Factor_Clicked"/>
-		<Button Text="Square Root"
+        <Button Text="Square Root"
 				AbsoluteLayout.LayoutFlags="All"
 				AbsoluteLayout.LayoutBounds="0.8, 0.3, 0.33, 0.15"
 				Clicked="Sqrt_Clicked"/>
-		<Label Text="Parentheses"
-			   AbsoluteLayout.LayoutFlags="All"
-			   AbsoluteLayout.LayoutBounds="0.8, 0.45, 0.5, 0.15"
-			   HorizontalTextAlignment="Center"
-			   VerticalTextAlignment="Center"/>
-		<Switch x:Name="parentheses"
-				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.875, 0.45, 0.125, 0.075"
-				IsToggled="True"/>
-	</AbsoluteLayout>
+    </AbsoluteLayout>
 </ContentPage>

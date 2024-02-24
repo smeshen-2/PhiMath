@@ -63,7 +63,7 @@ public partial class Factors : ContentPage
         factor_output.Text = coefficient == 1 ? "" : coefficient.ToString();
         if (root != 1)
         {
-            factor_output.Text += "√" + (parentheses.IsToggled ? "(" + root + ")" : root.ToString());
+            factor_output.Text += "√" + root.ToString();
             factor_output.Text += " ≈ " + Math.Round(Math.Sqrt(n), 5);
         }
     }
