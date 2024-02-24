@@ -1,12 +1,14 @@
 ﻿using Exceptions;
+using Numbers;
+using WordEvolution;
 
 namespace Nomials;
 
 public class Polynomial
 {
+    public List<Monomial> Monomials { get; private set; } = new List<Monomial>();
     public int Count => Monomials.Count;
     public int Power => Monomials[0].Power;
-    public List<Monomial> Monomials { get; private set; } = new List<Monomial>();
     public Polynomial() { Monomials = new List<Monomial>(); }
 
     // normalizes unless told otherwise
@@ -42,7 +44,7 @@ public class Polynomial
     {
         foreach (var item in p.Monomials)
         {
-            this.Add(item);
+            Monomials.Add(item);
         }
         return this;
     }
@@ -52,7 +54,7 @@ public class Polynomial
         List<Monomial> monos = new List<Monomial>();
         foreach (var item in Monomials)
         {
-            monos.Add(item.Copy());
+            monos.Add(item);
         }
         return new Polynomial(monos, false);
     }
@@ -81,27 +83,28 @@ public class Polynomial
         Polynomial p = Copy();
         p.Sort();
         Monomials.Clear();
-        double coeff = 0;
-        int pow = p.Count == 0 ? 0 : p.Power;
+        Fraction coeff = Fraction.Parse(0);
+        int pow = p.Power;
         foreach (var item in p.Monomials)
         {
             if (item.Power == pow) coeff += item.Coefficient;
             else
             {
                 Add(new Monomial(coeff, pow));
-                coeff = item.Coefficient;
+                coeff = item.Coefficient.Normalize();
                 pow = item.Power;
             }
         }
         Add(new Monomial(coeff, pow));
         Monomials.RemoveAll(x => x.Coefficient == 0);
-        if (Monomials.Count == 0) Monomials.Add(new Monomial(0, 0));
+        if (Monomials.Count == 0) Monomials.Add(new Monomial(0));
         return this;
     }
 
     public static string ToRPN(string expr)
     {
         string s = expr;
+        // gets rid of superscript
         bool inPower = false;
         int offset = 0;
         for (int i = 0; i < expr.Length; i++)
@@ -117,13 +120,18 @@ public class Polynomial
                 s = s.Insert(i + offset, Monomial.FromSuperscript(expr[i].ToString()).ToString() ?? "").Remove(i + offset + 1, 1);
             }
             else inPower = false;
-            if (!"(+*^-/)x,._0123456789⁰¹²³⁴⁵⁶⁷⁸⁹ ".Contains(expr[i])) throw new ArgumentException();
+            if (!"(+*^-/)x,._0123456789 ".Contains(expr[i])) throw new ArgumentException();
         }
+
         expr = s;
-        expr = "( " + expr.Replace("+", " + ").Replace("-", " - ")
-            .Replace("*", " * ").Replace("/", " / ")
-            .Replace("(", " ( ").Replace(")", " ) ")
-            .Replace("^", " ^ ") + " )";
+        expr = Evolver.Evolve(expr, "|*|N_("); // adds * between monomial and (
+        expr = Evolver.Evolve(expr, "|*|)_N"); // adds * between ) and monomial
+        expr = Evolver.Evolve(expr, "|*|)_("); // adds * between ) and (
+        expr = Evolver.Evolve(expr, "|*|x_N"); // adds * between x and monomial
+        expr = Evolver.Evolve(expr, "|*|N_x"); // adds * between monomial and x
+        expr = Evolver.Evolve(expr, "| |_O"); // adds space beofore [+-*/()^]
+        expr = Evolver.Evolve(expr, "| |O_"); // adds space after [+-*/()^]
+        expr = "( " + expr + " )";
         while (expr.Contains("  ")) expr = expr.Replace("  ", " ");
         expr = expr.Replace("( -", "( 0 -");
 
@@ -133,50 +141,36 @@ public class Polynomial
 
         foreach (var item in arrExpr)
         {
-            try
+            switch (item)
             {
-                Monomial t = Monomial.Parse(item);
-                if (t.Coefficient == 0) { res += "0 "; continue; }
-                if (t.Power == 0) { res += t.Coefficient + " "; continue; }
-                if (t.Coefficient == 1) { res += "x "; continue; }
-                res += t.Coefficient + " x ";
-                operators.Push('*');
-                continue;
-            }
-            catch { }
-
-            if (item == "(") operators.Push('(');
-
-            if (item == "+" || item == "-")
-            {
-                while (operators.Peek() != '(')
-                {
-                    res += operators.Pop() + " ";
-                }
-                operators.Push(item[0]);
-            }
-
-            if (item == "*" || item == "/")
-            {
-                while (operators.Peek() != '(' && operators.Peek() != '+' && operators.Peek() != '-')
-                {
-                    res += operators.Pop() + " ";
-                }
-                operators.Push(item[0]);
-            }
-
-            if (item == "^")
-            {
-                operators.Push('^');
-            }
-
-            if (item == ")")
-            {
-                while (operators.Count > 0 && operators.Peek() != '(')
-                {
-                    res += operators.Pop() + " ";
-                }
-                if (operators.Count > 0) operators.Pop();
+                case "(":
+                    operators.Push('(');
+                    continue;
+                case "+":
+                case "-":
+                    while (operators.Peek() != '(')
+                        res += operators.Pop() + " ";
+                    operators.Push(item[0]);
+                    continue;
+                case "*":
+                case "/":
+                    while (operators.Peek() != '(' && operators.Peek() != '+' && operators.Peek() != '-')
+                        res += operators.Pop() + " ";
+                    operators.Push(item[0]);
+                    continue;
+                case "^":
+                    operators.Push('^');
+                    continue;
+                case ")":
+                    while (operators.Count > 0 && operators.Peek() != '(')
+                    {
+                        res += operators.Pop() + " ";
+                    }
+                    if (operators.Count > 0) operators.Pop();
+                    continue;
+                default:
+                    res += item + " ";
+                    continue;
             }
         }
         while (operators.Count > 0) res += operators.Pop() + " ";
@@ -195,52 +189,41 @@ public class Polynomial
             {
                 case "+":
                     operands.Push(operands.Pop() + operands.Pop());
-                    break;
+                    continue;
                 case "-":
                     operands.Push(-operands.Pop() + operands.Pop());
-                    break;
+                    continue;
                 case "*":
                     operands.Push(operands.Pop() * operands.Pop());
-                    break;
+                    continue;
                 case "/":
                     Monomial divisor;
                     try { divisor = Monomial.Parse(operands.Pop().ToString()); }
                     catch { throw new DivideByPolynomialException(); }
-
                     if (divisor.Coefficient == 0) throw new DivideByZeroException();
                     operands.Push(operands.Pop() / divisor);
-                    break;
+                    continue;
                 case "^":
-                    int pow = int.Parse(operands.Pop().ToString());
+                    int pow = int.Parse(operands.Pop().ToString()); // TODO: turn into Fraction
                     Polynomial p = operands.Pop();
-                    if (pow == 0) { operands.Push(Parse("1", false)); break; }
-                    if (pow == 1) { operands.Push(p); break; }
-
                     if (pow < 0)
                     {
                         if (p.Count > 1) throw new DivideByPolynomialException();
                         Monomial m = p.Monomials[0];
-                        Monomial mCopy = m.Copy();
-                        while (pow < -1)
-                        {
-                            m *= mCopy;
-                            pow++;
-                        }
-                        operands.Push(new Polynomial(new Monomial(1, 0) / m));
-                        break;
+                        Fraction coeff = new Fraction(1);
+                        for (int i = 0; i > pow; i--)
+                            coeff /= m.Coefficient;
+                        operands.Push(new Polynomial(new Monomial(coeff, m.Power * pow)));
+                        continue;
                     }
-
-                    Polynomial pCopy = p.Copy();
-                    while (pow > 1)
-                    {
-                        p *= pCopy;
-                        pow--;
-                    }
-                    operands.Push(p);
-                    break;
+                    Polynomial res = new Polynomial(new Monomial(1));
+                    for (int i = 0; i < pow; i++)
+                        res *= p;
+                    operands.Push(res);
+                    continue;
                 default:
                     operands.Push(Parse(item, false));
-                    break;
+                    continue;
             }
         }
         return operands.Pop().Sort();
@@ -253,53 +236,70 @@ public class Polynomial
         p.Normalize();
         List<double> res = new List<double>();
 
-        if (p.Monomials[p.Count - 1].Power < 0)
-        {
+        while (p.Monomials[p.Count - 1].Power < 0) // multiply by x if there's a negative power
             p *= new Monomial(1, 1);
-            res.AddRange(Solve(p));
-            res.RemoveAll(x => x == 0);
-            if (res.Count == 0) throw new UnsolvableException();
-            res.Sort();
-            return res;
-        }
-        if (p.Monomials[p.Count - 1].Power > 0)
+        while (p.Monomials[p.Count - 1].Power > 0) // divide by x if there's no x^0, x=0
         {
             p /= new Monomial(1, 1);
             res.Add(0);
-            try { res.AddRange(Solve(p)); } catch (xeOException) { }
-            res.Sort();
-            return res;
         }
+        // if not binomial and power > 2, do horner and check again
+        if (p.Count != 2 && p.Power > 2) res.AddRange(SolveHorner(p).Select(f => (double)f));
+        if (p.Count == 2 || p.Power <= 2) res.AddRange(SimpleSolve(p));
+        return res;
+    }
+    // finds all solutions to binomials and polynomials <= 2nd power
+    private static List<double> SimpleSolve(Polynomial p)
+    {
+        List<double> res = new List<double>();
 
         if (p.Power == 0) throw p.Monomials[0].Coefficient == 0 ? new AxeQException() : new xeOException();
-        if (p.Power == 1) { res.Add(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1)); return res; }
+        if (p.Power == 1) { res.Add((double)(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1))); return res; }
         if (p.Power == 2) return SolveQuadratic(p);
 
-        if (p.Count == 2) // ax^n + b = 0 -> x = +-nth root of -b/a
+        if (p.Count == 2) // ax^n + b = 0 -> x = (+- if even power)nth root of -b/a
         {
-            double t = -p.Monomials[1].Coefficient / p.Monomials[0].Coefficient;
+            double t = (double)(-p.Monomials[1].Coefficient / p.Monomials[0].Coefficient); // t = -b/a
             if (t > 0)
             {
-                if (p.Power % 2 == 0) res.Add(-Math.Pow(t, 1 / (float)p.Power));
-                res.Add(Math.Pow(t, 1 / (float)p.Power));
+                if (p.Power % 2 == 0) res.Add(-Math.Pow(t, 1 / (double)p.Power));
+                res.Add(Math.Pow(t, 1 / (double)p.Power));
                 return res;
             }
             if (p.Power % 2 == 1)
             {
                 t = -t;
-                res.Add(-Math.Pow(t, 1 / (float)p.Power));
+                res.Add(-Math.Pow(t, 1 / (double)p.Power));
                 return res;
             }
             throw new xeOException();
         }
+        return res;
+    }
 
-        int first = (int)p.GetCoefficientByPower(p.Power);
-        int last = (int)p.GetCoefficientByPower(0);
+    private static List<double> SolveQuadratic(Polynomial p)
+    {
+        List<double> res = new List<double>();
+        double a = (double)p.GetCoefficientByPower(2);
+        double b = (double)p.GetCoefficientByPower(1);
+        double c = (double)p.GetCoefficientByPower(0);
+        double discriminant = b * b - 4 * a * c;
+        if (discriminant < 0) throw new xeOException();
+        res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
+        res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
+        return res;
+    }
+
+    private static List<Fraction> SolveHorner(Polynomial p)
+    {
+        List<Fraction> res = new List<Fraction>();
+        p = IntifyCoefficients(p);
+        int first = Math.Abs(p.GetCoefficientByPower(p.Power).P);
+        int last = Math.Abs(p.GetCoefficientByPower(0).P);
+
         HashSet<int> divisorsFirst = new HashSet<int>() { 1 };
         HashSet<int> divisorsLast = new HashSet<int>() { 1, -1 };
 
-        if (first < 0) first = -first;
-        if (last < 0) last = -last;
         for (int i = 2; i <= first; i++)
             if (first % i == 0)
                 divisorsFirst.Add(i);
@@ -309,39 +309,38 @@ public class Polynomial
                 divisorsLast.Add(i);
                 divisorsLast.Add(-i);
             }
+
         foreach (var dividend in divisorsLast)
             foreach (var divisor in divisorsFirst)
             {
-                float possibleSolution = (dividend / (float)divisor);
+                Fraction possibleSolution = new Fraction(dividend, divisor);
                 while (p.WhereXEquals(possibleSolution) == 0)
                 {
-                    string solution = "x" + (possibleSolution < 0 ? " + " : " - ") + Math.Abs(possibleSolution);
+                    string solution = "x" + (possibleSolution < 0 ? " + " + -possibleSolution : " - " + possibleSolution);
                     p /= Parse(solution, false);
                     res.Add(possibleSolution);
                 }
             }
-        // finishes the job if there is a quadratic equation left
-        // allows the quadratic equation to have no solutions since the overall equation has at least one
-        if (p.Power == 2)
-        {
-            try { res.AddRange(SolveQuadratic(p)); }
-            catch (xeOException) { }
-        }
-        res.Sort();
+
+        if (res.Count == 0) throw new UnsolvableException();
         return res;
     }
 
-    private static List<double> SolveQuadratic(Polynomial p)
+    public static Polynomial IntifyCoefficients(Polynomial p)
     {
-        List<double> res = new List<double>();
-        double a = p.GetCoefficientByPower(2);
-        double b = p.GetCoefficientByPower(1);
-        double c = p.GetCoefficientByPower(0);
-        double discriminant = b * b - 4 * a * c;
-        if (discriminant < 0) throw new xeOException();
-        res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
-        res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
-        return res;
+        bool done = false;
+        while (!done)
+        {
+            done = true;
+            foreach (Monomial mono in p.Monomials)
+                if (mono.Coefficient.Q != 1)
+                {
+                    p *= new Monomial(mono.Coefficient.Q);
+                    done = false;
+                    break;
+                }
+        }
+        return p;
     }
 
     public static Polynomial ParseEquation(string expr)
@@ -361,11 +360,21 @@ public class Polynomial
         }
         return res;
     }
-
-    public double GetCoefficientByPower(int power)
+    public Fraction WhereXEquals(Fraction x)
     {
-        Monomial m = Monomials.Find(n => n.Power == power) ?? new Monomial(0, 0);
-        return m.Coefficient;
+        Fraction res = Fraction.Parse(0);
+        foreach (var item in Monomials)
+        {
+            res += item.WhereXEquals(x);
+        }
+        return res;
+    }
+
+    public Fraction GetCoefficientByPower(int power)
+    {
+        Fraction coeff = Monomials.Find(n => n.Power == power).Coefficient;
+        if (coeff.P == 0) return new Fraction(0);
+        return coeff;
     }
 
     public override string ToString()
@@ -410,7 +419,7 @@ public class Polynomial
     {
         Polynomial res = new Polynomial();
         Polynomial p = p1.Copy();
-        Polynomial t = new Polynomial();
+        Polynomial t;
         while (p.Power >= p2.Power)
         {
             res.Add(p.Monomials[0] / p2.Monomials[0]);
@@ -421,24 +430,15 @@ public class Polynomial
     }
     public static Polynomial operator %(Polynomial p1, Polynomial p2)
     {
-        Polynomial p = p1.Copy();
-        Polynomial t = new Polynomial();
-        while (p.Power >= p2.Power)
-        {
-            t = (p.Monomials[0] / p2.Monomials[0]) * p2;
-            p -= t;
-        }
-        return p;
+        return p1 - p1 / p2 * p2;
     }
 
     // OPERATORS WITH ONE POLYNOMIAL
     public static Polynomial operator -(Polynomial p)
     {
         Polynomial res = p.Copy();
-        foreach (var item in res.Monomials)
-        {
-            item.Coefficient = -item.Coefficient;
-        }
+        for (int i = 0; i < res.Count; i++)
+            res.Monomials[i] = -res.Monomials[i];
         return res;
     }
     public static Polynomial operator *(Polynomial p, Monomial m)
@@ -471,4 +471,5 @@ public class Polynomial
         res.Normalize();
         return res;
     }
+    // TODO: implement static Polynomial Pow(Polynomial p, Fraction(?) pow)
 }

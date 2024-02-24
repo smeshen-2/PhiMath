@@ -1,21 +1,27 @@
 ﻿using System.Text.RegularExpressions;
+using Numbers;
 
 namespace Nomials;
 
-public class Monomial
+public struct Monomial
 {
-    public double Coefficient { get; set; }
+    public Fraction Coefficient { get; set; }
     public int Power { get; set; }
 
-    public Monomial(double coefficient, int power)
+    public Monomial(Fraction coefficient, int power = 0)
     {
         Coefficient = coefficient;
         Power = power;
     }
-
-    public Monomial Copy()
+    public Monomial(double coefficient, int power = 0)
     {
-        return new Monomial(Coefficient, Power);
+        Coefficient = Fraction.Parse(coefficient);
+        Power = power;
+    }
+    public Monomial(int coefficient, int power = 0)
+    {
+        Coefficient = Fraction.Parse(coefficient);
+        Power = power;
     }
 
     public override string ToString()
@@ -26,14 +32,14 @@ public class Monomial
         string res = "";
         if (Coefficient == 1) res += "x";
         else if (Coefficient == -1) res += "-x";
-        else res += Coefficient + "x";
+        else if (Coefficient.Q == 1) res += Coefficient + "x";
+        else res += "(" + Coefficient + ")x";
 
         if (Power == 1) return res;
         if (Power < 0) return res + $"^({Power})";
         return res + $"{ToSuperscript(Power)}";
     }
 
-    public static string? ToSuperscript(string s) => ToSuperscript(int.Parse(s));
     public static string? ToSuperscript(int n)
     {
         if (n < 0) return null;
@@ -58,26 +64,26 @@ public class Monomial
 
     public static Monomial Parse(string s)
     {
+        s = s.Replace(" ", "").Replace("(", "").Replace(")", "");
         foreach (char c in s)
         {
-            if (!"^-x,._0123456789⁰¹²³⁴⁵⁶⁷⁸⁹ ".Contains(c)) throw new ArgumentException();
+            if (!"/^-x,._0123456789⁰¹²³⁴⁵⁶⁷⁸⁹".Contains(c)) throw new ArgumentException();
         }
-        double coeff = 1;
+        Fraction coeff = new Fraction(1, 1);
         int power = 1;
-        s.Replace(" ", "");
-        if (!s.Contains('x')) return new Monomial(double.Parse(s), 0);
+        if (!s.Contains('x')) return new Monomial(Fraction.Parse(s));
         if (s[0] == '-')
         {
-            coeff = -1;
+            coeff *= -1;
             s = s.Remove(0, 1);
         }
         if (!(s[0] == 'x'))
-            coeff *= double.Parse(s.Split('x')[0]);
+            coeff *= Fraction.Parse(s.Split('x')[0]);
         if (s.Contains('^'))
         {
             string pow = s.Split('x')[1];
             pow = pow.Substring(1, pow.Length - 1);
-            if (Regex.Match(pow, @"\(-?\d+\)").Success) pow = pow.Substring(1, pow.Length - 2);
+            if (Regex.IsMatch(pow, @"\(.*\)")) pow = pow.Substring(1, pow.Length - 2);
             power = int.Parse(pow);
         }
         else if (s.Split('x')[1] != "") power = FromSuperscript(s.Split('x')[1]) ?? throw new ArgumentException();
@@ -85,24 +91,23 @@ public class Monomial
     }
 
     public double WhereXEquals(double x)
-    {
-        return Coefficient * Math.Pow(x, Power);
-    }
+    { return (double)Coefficient * Math.Pow(x, Power); }
+    public Fraction WhereXEquals(Fraction x)
+    { return Coefficient * Fraction.Pow(x, Power); }
 
     public static Polynomial operator +(Monomial m1, Monomial m2)
-    {
-        return new Polynomial(new List<Monomial>() { m1, m2 });
-    }
+    { return new Polynomial(new List<Monomial>() { m1, m2 }); }
+
     public static Polynomial operator -(Monomial m1, Monomial m2)
-    {
-        return new Polynomial(new List<Monomial>() { m1, new Monomial(-m1.Coefficient, m1.Power) });
-    }
+    { return new Polynomial(new List<Monomial>() { m1, new Monomial(-m1.Coefficient, m1.Power) }); }
+
     public static Monomial operator *(Monomial m1, Monomial m2)
-    {
-        return new Monomial(m1.Coefficient * m2.Coefficient, m1.Power + m2.Power);
-    }
+    { return new Monomial(m1.Coefficient * m2.Coefficient, m1.Power + m2.Power); }
+
     public static Monomial operator /(Monomial m1, Monomial m2)
-    {
-        return new Monomial(m1.Coefficient / m2.Coefficient, m1.Power - m2.Power);
-    }
+    { return new Monomial(m1.Coefficient / m2.Coefficient, m1.Power - m2.Power); }
+
+    public static Monomial operator -(Monomial m) => new Monomial(-m.Coefficient, m.Power);
+
+    // TODO: implement static Monomial Pow(Monomial m, Fraction pow)
 }
