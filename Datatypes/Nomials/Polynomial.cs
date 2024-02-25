@@ -120,7 +120,7 @@ public class Polynomial
                 s = s.Insert(i + offset, Monomial.FromSuperscript(expr[i].ToString()).ToString() ?? "").Remove(i + offset + 1, 1);
             }
             else inPower = false;
-            if (!"(+*^-/)x,._0123456789 ".Contains(expr[i])) throw new ArgumentException();
+            if (!"(+*^-/)x,._0123456789⁰¹²³⁴⁵⁶⁷⁸⁹ ".Contains(expr[i])) throw new ArgumentException();
         }
 
         expr = s;
@@ -245,7 +245,10 @@ public class Polynomial
         }
         // if not binomial and power > 2, do horner and check again
         if (p.Count != 2 && p.Power > 2) res.AddRange(SolveHorner(p).Select(f => (double)f));
-        if (p.Count == 2 || p.Power <= 2) res.AddRange(SimpleSolve(p));
+        if (p.Count == 2 || p.Power <= 2)
+            try { res.AddRange(SimpleSolve(p)); } // if a solution is found but SimpleSolve returns xeO, ignore
+            catch (xeOException e) { if (res.Count == 0) throw e; }
+        res.Sort();
         return res;
     }
     // finds all solutions to binomials and polynomials <= 2nd power

@@ -1,5 +1,6 @@
 ﻿using Nomials;
 using Exceptions;
+using WordEvolution;
 
 namespace PhiMath.Pages;
 
@@ -8,11 +9,14 @@ public partial class Polynomials : ContentPage
     public Polynomials()
     {
         InitializeComponent();
+        Evolver.AddGroup('N', "0123456789x");
+        Evolver.AddGroup('O', "+-*/()^");
+        Evolver.Separator = "|";
     }
     private void Normalize_Clicked(object sender, EventArgs e)
     {
         string expr;
-        try { expr = polynomials_entry.Text; }
+        try { expr = polynomials_entry.Text; if (expr == "") throw new Exception(); }
         catch { polynomials_output.Text = "Invalid input"; return; }
 
         try { polynomials_output.Text = Polynomial.Normalize(expr).ToString(); }
@@ -25,7 +29,7 @@ public partial class Polynomials : ContentPage
     {
         polynomials_output.Text = "";
         string expr;
-        try { expr = polynomials_entry.Text; }
+        try { expr = polynomials_entry.Text; if (expr == "") throw new Exception(); }
         catch { polynomials_output.Text = "Invalid input"; return; }
 
         try { polynomials_output.Text = GetSolveOutput(Polynomial.ParseEquation(expr), Polynomial.Solve(expr), 4); }
@@ -40,8 +44,7 @@ public partial class Polynomials : ContentPage
         if (res.Count == 1)
         {
             x = Math.Round(res[0], precision);
-            if (p.Power > 2 && p.Count > 2) return "x1 " + (x == res[0] ? "= " : "≈ ") + x + "...";
-            return "x " + (x == res[0] ? "= " : "≈ ") + x;
+            return "x" + (Math.Round(res[0], 7) == x ? " = " : " ≈ ") + x;
         }
         Dictionary<double, int> solutions = new Dictionary<double, int>();
         for (int i = 0; i < res.Count; i++)
@@ -65,7 +68,6 @@ public partial class Polynomials : ContentPage
             output += (Math.Round(res[counter - 2], 7) == x ? " = " : " ≈ ") + x + "; ";
         }
         output = output.Substring(0, output.Length - 2);
-        // if (res.Count != p.Power) output += "...";
         return output;
     }
 }
