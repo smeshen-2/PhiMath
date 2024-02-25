@@ -1,4 +1,4 @@
-﻿using Numbers;
+﻿/*using Numbers;
 
 namespace GeometryTools;
 
@@ -97,3 +97,4 @@ public struct Vector2
         return a.X * b.Y - b.X * a.Y;
     }
 }
+*/

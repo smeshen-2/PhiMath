@@ -1,4 +1,4 @@
-﻿using Numbers;
+﻿/*using Numbers;
 
 namespace GeometryTools;
 
@@ -48,3 +48,4 @@ public struct Triangle
         return cross1 * cross2 >= 0;
     }
 }
+*/

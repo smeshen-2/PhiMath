@@ -1,4 +1,4 @@
-﻿using Numbers;
+﻿/*using Numbers;
 
 namespace GeometryTools;
 
@@ -106,3 +106,4 @@ public struct Line
         return A * point.X + B * point.Y + C == 0;
     }
 }
+*/

@@ -1,4 +1,4 @@
-﻿using Numbers;
+﻿/*using Numbers;
 
 namespace GeometryTools;
 
@@ -60,3 +60,4 @@ public struct Segment
         return line.ContainsPoint(point) && point.X >= Fraction.Min(point1.X, point2.X) && point.X <= Fraction.Max(point1.X, point2.X);
     }
 }
+*/

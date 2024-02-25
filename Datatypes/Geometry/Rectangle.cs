@@ -1,4 +1,4 @@
-﻿using Numbers;
+﻿/*using Numbers;
 
 namespace GeometryTools;
 
@@ -78,3 +78,4 @@ public struct Rectangle
         return ans;
     }
 }
+*/

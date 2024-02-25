@@ -64,7 +64,7 @@ public struct Root
         match = Regex.Match(s, @"^-?\d+\/\d+$");
         if (match.Success)
         {
-            A = new Fraction(s);
+            A = Fraction.Parse(s);
             B = 1;
             return;
         }
@@ -85,7 +85,7 @@ public struct Root
         match = Regex.Match(s, @"^-?\d+$");
         if (match.Success)
         {
-            A = match.Value;
+            A = Fraction.Parse(match.Value);
             B = 1;
             return;
         }
@@ -102,7 +102,7 @@ public struct Root
                 return new Root(A * i, B / (i * i));
             }
         }
-        return new Root(A.Simplified(), B);
+        return new Root(A.Normalize(), B);
     }
 
     public override string ToString()
@@ -116,12 +116,12 @@ public struct Root
 
     public float ToFloat()
     {
-        return (float)(A.ToFloat() * Math.Sqrt(B));
+        return (float)(A * Math.Sqrt(B));
     }
 
     public Root Inverted()
     {
-        return new Root(A.Inverted() / B, B);
+        return new Root(A.Invert() / B, B);
     }
 
     public Fraction Squared()

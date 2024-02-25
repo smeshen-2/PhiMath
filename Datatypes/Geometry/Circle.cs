@@ -1,4 +1,4 @@
-﻿using Numbers;
+﻿/*using Numbers;
 
 namespace GeometryTools;
 
@@ -34,3 +34,4 @@ public struct Circle
         return Vector2.Distance(point, Center) < Radius;
     }
 }
+*/

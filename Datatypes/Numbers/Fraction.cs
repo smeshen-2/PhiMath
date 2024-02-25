@@ -140,9 +140,53 @@ public struct Fraction
         }
         return a;
     }
-
     public static int NOK(int a, int b)
     {
         return a * b / NOD(a, b);
+    }
+    public static int NOD(params int[] numbers)
+    {
+        bool isNOD = false;
+        for (int i = numbers.Min(); i >= 1; i--)
+        {
+            isNOD = true;
+            for (int j = 0; j < numbers.Length; j++)
+            {
+                if (numbers[j] % i != 0)
+                {
+                    isNOD = false;
+                    break;
+                }
+            }
+            if (isNOD) return i;
+        }
+        throw new Exception();
+    }
+    public static int NOK(params int[] numbers)
+    {
+        bool isNOK = false;
+        for (int i = numbers.Max(); i <= int.MaxValue; i++)
+        {
+            isNOK = true;
+            for (int j = 0; j < numbers.Length; j++)
+            {
+                if (i % numbers[j] != 0)
+                {
+                    isNOK = false;
+                    break;
+                }
+            }
+            if (isNOK) return i;
+        }
+        throw new Exception();
+    }
+    public static Fraction Abs(Fraction fraction)
+    {
+        if (fraction.P >= 0) return fraction;
+        return -fraction;
+    }
+    public static Root Sqrt(Fraction fraction)
+    {
+        return new Root(1, fraction.P * fraction.Q, fraction.Q);
     }
 }
