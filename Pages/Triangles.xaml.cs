@@ -46,6 +46,10 @@ public partial class Triangles : ContentPage
             Real[] sides = new Real[3];
             int[] angles = new int[3];
 
+            Entry[] entries = { a, b, c, alpha, beta, gamma, S, P, R, r };
+            entries.Where(entry => IsGiven(entry) == false).ToList()
+                .ForEach(entry => entry.Text = "");
+
             if (IsGiven(a)) sides[0] = new Real(a.Text);
             else sides[0] = null;
             if (IsGiven(b)) sides[1] = new Real(b.Text);
@@ -102,10 +106,8 @@ public partial class Triangles : ContentPage
                     if (cos.ContainsKey(angle) == false) return;
                     Real side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
 
-                    // S = 1/2 * a * b * sin(gamma)
-                    Real area = "1/2" * side1 * side2 * sin[angle];
-                    S.Text = area.ToString();
-                    S.TextColor = uneditedColor;
+                    
+                    Real area = CalculateArea(side1, side2, angle);
 
                     if (side3Squared.Roots.Count == 1)
                     {
@@ -113,12 +115,9 @@ public partial class Triangles : ContentPage
                         unknownSide.Text = side3.ToString();
 
                         // getting P
-                        Real perimeter = side1 + side2 + side3;
-                        P.Text = perimeter.ToString();
+                        Real perimeter = CalculatePerimeter(side1, side2, side3);
 
-                        // sine theorem (to get R)
-                        Root bigRadius = side3.Roots[0] / (sin[angle] * "2").Simplified();
-                        R.Text = bigRadius.ToString();
+                        CalculateBigRadius(angle, side3.ToString());
 
                         // S = p * r (to get r)
                         if (perimeter.Roots.Count == 1)
@@ -140,10 +139,7 @@ public partial class Triangles : ContentPage
                         Real perimeter = side1 + side2;
                         P.Text = perimeter.ToString() + "+" + side3;
 
-                        // sine theorem (to get R)
-                        var d = sin[angle] * "2";
-                        string bigRadius = d == "1" ? side3 : side3 + "/" + d.ToString();
-                        R.Text = bigRadius;
+                        CalculateBigRadius(angle, side3);
 
                         // S = p * r (to get r)
                         var t = "2" * area;
@@ -156,11 +152,6 @@ public partial class Triangles : ContentPage
                 }
                 else
                 {
-                    // cos theorem
-                    // Real side1 = sides[knownSideIndexes.First()];
-                    // Real side2 = sides[knownSideIndexes.Skip(1).First()];
-                    // int angle = angles[3 - knownSideIndexes.Sum()];
-                    // Real side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
                     Real oppositeSide = sides[knownAngleIndexes.First()];
                     Real knownAdjacentSide = sides[knownSideIndexes.First(i => i != knownAngleIndexes.First())];
                     int angle = angles[knownAngleIndexes.First()];
@@ -182,16 +173,15 @@ public partial class Triangles : ContentPage
                             }
                         }
                         CalculatePerimeter(sides);
+                        CalculateArea(knownAdjacentSide, side3, angle);
+                        CalculateBigRadius(angle, oppositeSide.ToString());
                     }
 
                 }
             }
             else if (knownSideIndexes.Count == 1 && knownAngleIndexes.Count == 3)
             {
-                // sine theorem (to get R)
-                var side = sides[knownSideIndexes.First()];
-                Real bigRadius = side / (sin[angles[knownSideIndexes.First()]] * "2");
-                R.Text = bigRadius.ToString();
+                CalculateBigRadius(angles[knownSideIndexes.First()], sides[knownSideIndexes.First()].ToString());
             }
         }
         catch
@@ -200,11 +190,48 @@ public partial class Triangles : ContentPage
         }
     }
 
-    private void CalculatePerimeter(Real[] sides)
+    /// <summary>
+    /// Calculates R using the sine theorem
+    /// </summary>
+    private Real CalculateBigRadius(int angle, string side)
     {
-        var perimeter = sides[0] + sides[1] + sides[2];
+        Real radiusValue = "1";
+        Root d = sin[angle] * "2";
+        try
+        {
+            radiusValue  = new Real(side) / d;
+        }
+        catch
+        {
+            string bigRadius = d == "1" ? side : side + "/" + d.ToString();
+            R.Text = bigRadius;
+            R.TextColor = uneditedColor;
+            return null;
+        }
+        radiusValue.Simplify();
+        R.Text = radiusValue.ToString();
+        R.TextColor = uneditedColor;
+        return radiusValue;
+    }
+
+    /// <summary>
+    /// Calculates the are using the formula: S = 1/2 * a * b * sin(angle)
+    /// </summary>
+    /// <returns>s</returns>
+    private Real CalculateArea(Real side1, Real side2, int angle)
+    {
+        Real area = "1/2" * side1 * side2 * sin[angle];
+        S.Text = area.ToString();
+        S.TextColor = uneditedColor;
+        return area;
+    }
+
+    private Real CalculatePerimeter(params Real[] sides)
+    {
+        Real perimeter = sides[0] + sides[1] + sides[2];
         P.Text = perimeter.ToString();
         P.TextColor = uneditedColor;
+        return perimeter;
     }
 
     private void TextChanged(object sender, TextChangedEventArgs e)
