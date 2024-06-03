@@ -18,11 +18,11 @@
                 ContentTemplate="{DataTemplate pages:Algebra}"/>
         <ShellContent
                 Icon="geometry.png"
-                Title="Triangles"
+                Title="Triangles (work in progress)"
                 ContentTemplate="{DataTemplate pages:Triangles}"/>
         <ShellContent
                 Icon="combinatorics.png"
-                Title="Combinatorics"
+                Title="Combinatorics (work in progress)"
                 ContentTemplate="{DataTemplate pages:Combinatorics}"/>
     </FlyoutItem>
 </Shell>

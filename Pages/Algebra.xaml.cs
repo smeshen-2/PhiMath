@@ -9,33 +9,38 @@ public partial class Algebra : ContentPage
 	public Algebra()
 	{
 		InitializeComponent();
+		algebra_entry.Text = "";
 		Evolver.AddGroup('N', "0123456789x");
 		Evolver.AddGroup('O', "+-*/()^");
 		Evolver.Separator = "|";
 	}
 	private void Factor_Clicked(object sender, EventArgs e)
 	{
+		string entry = algebra_entry.Text;
+		if (entry == "") { algebra_output.Text = "Input an integer, polynomial or expression"; return; }
+
 		try
 		{
-			int n = int.Parse(algebra_entry.Text);
-			if (n == 0 || n == 1 || n == -1) { algebra_output.Text = "Няма пък да ти кажа"; return; }
+			int n = int.Parse(entry);
+			if (n == 0 || n == 1 || n == -1) { algebra_output.Text = n.ToString(); return; }
 			if (IsPrime(n)) { algebra_output.Text = "Prime"; return; }
 			algebra_output.Text = string.Join(", ", GetFactors(n));
 		}
 		catch
 		{
-			string expr;
 			try
 			{
-				expr = algebra_entry.Text;
-				if (expr == "") throw new Exception();
-			}
-			catch { algebra_output.Text = "Invalid input"; return; }
-
-			try
-			{
-				Polynomial p = Polynomial.ParseExpression(expr);
-				if (p.Power == 1) { algebra_output.Text = "Няма пък да ти кажа"; return; }
+				Polynomial p = Polynomial.ParseExpression(entry);
+				if (p.Power == 1) { algebra_output.Text = "No"; return; }
+				if (p.Power == 0)
+				{
+					if (p.Monomials[0].Coefficient.Q != 1) { algebra_output.Text = "Fraction"; return; }
+					int n = p.Monomials[0].Coefficient.P;
+					if (n == 0 || n == 1 || n == -1) { algebra_output.Text = n.ToString(); return; }
+					if (IsPrime(n)) { algebra_output.Text = "Prime"; return; }
+					algebra_output.Text = string.Join(", ", GetFactors(n));
+					return;
+				}
 				algebra_output.Text = Polynomial.Factorize(p);
 			}
 			catch (ArgumentException) { algebra_output.Text = "Invalid input"; }
@@ -44,21 +49,19 @@ public partial class Algebra : ContentPage
 	}
 	private void Normalize_Clicked(object sender, EventArgs e)
 	{
-		string expr;
-		try
-		{
-			expr = algebra_entry.Text;
-			if (expr == "") throw new Exception();
-		}
-		catch { algebra_output.Text = "Invalid input"; return; }
+		string entry = algebra_entry.Text;
+		if (entry == "") { algebra_output.Text = "Input a polynomial or expression"; return; }
 
-		try { algebra_output.Text = Polynomial.ParseExpression(expr).ToString(); }
+		try { algebra_output.Text = Polynomial.ParseExpression(entry).ToString(); }
 		catch (DivideByPolynomialException ex) { algebra_output.Text = ex.Message; }
 		catch (ArgumentException) { algebra_output.Text = "Invalid input"; }
 		catch { algebra_output.Text = "Something went wrong"; }
 	}
 	private void Sqrt_Clicked(object sender, EventArgs e)
 	{
+		string entry = algebra_entry.Text;
+		if (entry == "") { algebra_output.Text = "Input an integer"; return; }
+
 		int n;
 		try
 		{
@@ -66,7 +69,7 @@ public partial class Algebra : ContentPage
 			if (n < 0) throw new Exception();
 		}
 		catch { algebra_output.Text = "Invalid number"; return; }
-		if (n == 0 || n == 1) { algebra_output.Text = "Няма пък да ти кажа"; return; }
+		if (n == 0 || n == 1) { algebra_output.Text = n.ToString(); return; }
 		int coefficient = 1;
 		int root = n;
 		List<int> factors = GetFactors(n);
@@ -88,11 +91,10 @@ public partial class Algebra : ContentPage
 	}
 	private void Solve_Clicked(object sender, EventArgs e)
 	{
-		string expr;
-		try { expr = algebra_entry.Text; if (expr == "") throw new Exception(); }
-		catch { algebra_output.Text = "Invalid input"; return; }
+		string entry = algebra_entry.Text;
+		if (entry == "") { algebra_output.Text = "Input a polynomial or expression"; return; }
 
-		try { algebra_output.Text = GetSolveOutput(Polynomial.ParseEquation(expr), Polynomial.Solve(expr), 4); }
+		try { algebra_output.Text = GetSolveOutput(Polynomial.Solve(entry), 4); }
 		catch (xException ex) { algebra_output.Text = ex.Message; }
 		catch (DivideByPolynomialException ex) { algebra_output.Text = ex.Message; }
 		catch (ArgumentException) { algebra_output.Text = "Invalid input"; }
@@ -123,7 +125,7 @@ public partial class Algebra : ContentPage
 		}
 		return true;
 	}
-	static string GetSolveOutput(Polynomial p, List<double> res, int precision)
+	static string GetSolveOutput(List<double> res, int precision)
 	{
 		double x;
 		if (res.Count == 1)
