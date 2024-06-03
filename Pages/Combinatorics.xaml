@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PhiMath.Pages.Combinatorics"
+             Title="Combinatorics">
+    <AbsoluteLayout>
+        <Entry x:Name="P_entry"
+               AbsoluteLayout.LayoutFlags="All"
+               AbsoluteLayout.LayoutBounds="0.25, 0.05, 0.5, 0.2"
+               VerticalOptions="Center"
+               IsVisible="True"/>
+        <Entry x:Name="k_entry"
+               AbsoluteLayout.LayoutFlags="All"
+               AbsoluteLayout.LayoutBounds="0.12, 0.05, 0.4, 0.2"
+               VerticalOptions="Center"
+               IsVisible="False"/>
+        <Entry x:Name="n_entry"
+               AbsoluteLayout.LayoutFlags="All"
+               AbsoluteLayout.LayoutBounds="0.12, 0.05, 0.6, 0.2"
+               VerticalOptions="Center"
+               IsVisible="False"/>
+        <Entry x:Name="Pn_entry"
+               AbsoluteLayout.LayoutFlags="All"
+               AbsoluteLayout.LayoutBounds="0.07, 0.05, 0.35, 0.2"
+               VerticalOptions="Center"
+               IsVisible="False"/>
+        <Entry x:Name="Pa_entry"
+               AbsoluteLayout.LayoutFlags="All"
+               AbsoluteLayout.LayoutBounds="0.18, 0.05, 0.54, 0.2"
+               VerticalOptions="Center"
+               IsVisible="False"/>
+        <Picker
+            x:Name="Picker"
+            Title="Function"
+            AbsoluteLayout.LayoutFlags="All"
+            AbsoluteLayout.LayoutBounds="0.85, 0.05, 0.2, 0.2"
+            VerticalOptions="Center"
+            SelectedIndex="0"
+            SelectedIndexChanged="Picker_Changed">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>P</x:String>
+                    <x:String>V</x:String>
+                    <x:String>C</x:String>
+                    <x:String>P̃</x:String>
+                    <x:String>Ṽ</x:String>
+                    <x:String>C̃</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+        <Label x:Name="comb_output"
+               AbsoluteLayout.LayoutFlags="All"
+               AbsoluteLayout.LayoutBounds="0.5, 0.225, 1, 0.2"
+               HorizontalTextAlignment="Center"
+               FontSize="14"/>
+        <Button Text="Calculate"
+                AbsoluteLayout.LayoutFlags="All"
+                AbsoluteLayout.LayoutBounds="0.5, 0.3, 0.7, 0.15"
+                Clicked="Calculate_Clicked"/>
+    </AbsoluteLayout>
+</ContentPage>
