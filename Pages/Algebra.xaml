@@ -1,26 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 x:Class="PhiMath.Pages.Factors"
-			 Title="Factors">
+			 x:Class="PhiMath.Pages.Algebra">
 	<AbsoluteLayout>
-		<Entry x:Name="factor_entry"
-			   Keyboard="Numeric"
+		<Entry x:Name="algebra_entry"
 			   AbsoluteLayout.LayoutFlags="All"
-			   AbsoluteLayout.LayoutBounds="0.5, 0.05, 0.5, 0.2"
+			   AbsoluteLayout.LayoutBounds="0.5, 0.05, 0.7, 0.2"
 			   VerticalOptions="Center"/>
-		<Label x:Name="factor_output"
+		<Label x:Name="algebra_output"
 			   AbsoluteLayout.LayoutFlags="All"
 			   AbsoluteLayout.LayoutBounds="0.5, 0.225, 1, 0.2"
 			   HorizontalTextAlignment="Center"
 			   FontSize="14"/>
 		<Button Text="Factor"
 				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.2, 0.3, 0.33, 0.15"
+				AbsoluteLayout.LayoutBounds="0.2, 0.3, 0.35, 0.15"
 				Clicked="Factor_Clicked"/>
+        <Button Text="Normalize"
+				AbsoluteLayout.LayoutFlags="All"
+				AbsoluteLayout.LayoutBounds="0.8, 0.3, 0.35, 0.15"
+				Clicked="Normalize_Clicked"/>
         <Button Text="Square Root"
 				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.8, 0.3, 0.33, 0.15"
+				AbsoluteLayout.LayoutBounds="0.2, 0.5, 0.35, 0.15"
 				Clicked="Sqrt_Clicked"/>
+        <Button Text="Solve"
+				AbsoluteLayout.LayoutFlags="All"
+				AbsoluteLayout.LayoutBounds="0.8, 0.5, 0.35, 0.15"
+				Clicked="Solve_Clicked"/>
     </AbsoluteLayout>
 </ContentPage>

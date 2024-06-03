@@ -4,21 +4,25 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:PhiMath.Pages"
-    Shell.FlyoutBehavior="Disabled">
+    Shell.FlyoutBehavior="Flyout"
+    Shell.TabBarIsVisible="False">
 
-    <TabBar>
-        <Tab Title="Algebra">
-            <ShellContent
-                Title="Factors"
-                ContentTemplate="{DataTemplate pages:Factors}"/>
-            <ShellContent
-                Title="Polynomials"
-                ContentTemplate="{DataTemplate pages:Polynomials}"/>
-        </Tab>
-        <Tab Title="Geometry">
-            <ShellContent
+    <Shell.FlyoutHeader>
+        <Label Text="Phi Math" FontSize="Large"  Padding="25" BackgroundColor="{StaticResource Primary}"></Label>
+    </Shell.FlyoutHeader>
+    
+    <FlyoutItem FlyoutDisplayOptions="AsMultipleItems">
+        <ShellContent
+                Icon="algebra.png"
+                Title="Algebra"
+                ContentTemplate="{DataTemplate pages:Algebra}"/>
+        <ShellContent
+                Icon="geometry.png"
                 Title="Triangles"
                 ContentTemplate="{DataTemplate pages:Triangles}"/>
-        </Tab>
-    </TabBar>
+        <ShellContent
+                Icon="combinatorics.png"
+                Title="Combinatorics"
+                ContentTemplate="{DataTemplate pages:Combinatorics}"/>
+    </FlyoutItem>
 </Shell>
