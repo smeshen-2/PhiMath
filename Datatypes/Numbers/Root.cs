@@ -164,6 +164,16 @@ public struct Root
         return a.Squared() < b.Squared();
     }
 
+    public static bool operator >=(Root a, Root b)
+    {
+        return !(a < b);
+    }
+
+    public static bool operator <=(Root a, Root b)
+    {
+        return !(a > b);
+    }
+
     public static Real operator +(Root a, Root b)
     {
         return new Real(a, b);
