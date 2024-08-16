@@ -350,21 +350,24 @@ public class Polynomial
 		List<double> solutions = Solve(p);
 		double prevSolution = solutions[0];
 		int power = 0;
-		foreach (var solution in solutions)
+		Polynomial binomial = new Polynomial();
+        foreach (var solution in solutions)
 		{
-			Polynomial binomial = ParseExpression("x - (" + solution + ")");
 			if (solution == prevSolution) power++;
 			else
 			{
-				prevSolution = solution;
-				power = 1;
-				if (binomial.Count == 1) res += binomial + Monomial.ToSuperscript(power);
-				else res += "(" + binomial + ")" + Monomial.ToSuperscript(power);
+				if (binomial.Count == 1) res += binomial + (power == 1 ? "" : Monomial.ToSuperscript(power));
+				else res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
+                prevSolution = solution;
+                power = 1;
 			}
+            binomial = ParseExpression("x - (" + solution + ")");
 			t /= binomial;
 		}
-		res += "(" + t + ")";
-		return res;
+        if (binomial.Count == 1) res += binomial + (power == 1 ? "" : Monomial.ToSuperscript(power));
+        else res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
+		if (t != Parse("1")) res += "(" + t + ")";
+        return res;
 	}
 
 	public static Polynomial ParseEquation(string expr)
