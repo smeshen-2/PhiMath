@@ -11,22 +11,22 @@
                IsVisible="True"/>
         <Entry x:Name="k_entry"
                AbsoluteLayout.LayoutFlags="All"
-               AbsoluteLayout.LayoutBounds="0.12, 0.05, 0.4, 0.2"
+               AbsoluteLayout.LayoutBounds="0.2, 0.05, 0.25, 0.2"
                VerticalOptions="Center"
                IsVisible="False"/>
         <Entry x:Name="n_entry"
                AbsoluteLayout.LayoutFlags="All"
-               AbsoluteLayout.LayoutBounds="0.12, 0.05, 0.6, 0.2"
+               AbsoluteLayout.LayoutBounds="0.55, 0.05, 0.25, 0.2"
                VerticalOptions="Center"
                IsVisible="False"/>
         <Entry x:Name="Pn_entry"
                AbsoluteLayout.LayoutFlags="All"
-               AbsoluteLayout.LayoutBounds="0.07, 0.05, 0.35, 0.2"
+               AbsoluteLayout.LayoutBounds="0.2, 0.05, 0.15, 0.2"
                VerticalOptions="Center"
                IsVisible="False"/>
         <Entry x:Name="Pa_entry"
                AbsoluteLayout.LayoutFlags="All"
-               AbsoluteLayout.LayoutBounds="0.18, 0.05, 0.54, 0.2"
+               AbsoluteLayout.LayoutBounds="0.5, 0.05, 0.35, 0.2"
                VerticalOptions="Center"
                IsVisible="False"/>
         <Picker

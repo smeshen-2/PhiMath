@@ -247,7 +247,7 @@ public class Polynomial
 		if (p.Count != 2 && p.Power > 2) res.AddRange(SolveHorner(p).Select(f => (double)f));
 		if (p.Count == 2 || p.Power <= 2)
 			try { res.AddRange(SimpleSolve(p)); } // if a solution is found but SimpleSolve returns xeO, ignore
-			catch (xeOException e) { if (res.Count == 0) throw e; }
+			catch (xeOException) { if (res.Count == 0) throw; }
 		res.Sort();
 		return res;
 	}
@@ -346,28 +346,27 @@ public class Polynomial
 	public static string Factorize(Polynomial p)
 	{
 		string res = "";
-		Polynomial t = p.Copy();
+		Polynomial remainder = p.Copy();
 		List<double> solutions = Solve(p);
 		double prevSolution = solutions[0];
 		int power = 0;
 		Polynomial binomial = new Polynomial();
-        foreach (var solution in solutions)
+		foreach (var solution in solutions)
 		{
+			if (solution == 0) continue;
 			if (solution == prevSolution) power++;
 			else
 			{
-				if (binomial.Count == 1) res += binomial + (power == 1 ? "" : Monomial.ToSuperscript(power));
-				else res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
-                prevSolution = solution;
-                power = 1;
+				res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
+				prevSolution = solution;
+				power = 1;
 			}
-            binomial = ParseExpression("x - (" + solution + ")");
-			t /= binomial;
+			binomial = ParseExpression("x - (" + solution + ")");
+			remainder /= binomial;
 		}
-        if (binomial.Count == 1) res += binomial + (power == 1 ? "" : Monomial.ToSuperscript(power));
-        else res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
-		if (t != Parse("1")) res += "(" + t + ")";
-        return res;
+		res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
+		if (remainder.ToString() != "1") res = remainder + res;
+		return res;
 	}
 
 	public static Polynomial ParseEquation(string expr)

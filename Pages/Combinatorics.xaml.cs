@@ -33,7 +33,8 @@ public partial class Combinatorics : ContentPage
                 if (!int.TryParse(Pn_entry.Text, out n)) return;
                 try { a = Pa_entry.Text.Replace(" ", "").Split(',').Select(int.Parse).ToArray(); }
                 catch { return; }
-                comb_output.Text = CombinatoricsC.RepeatP(n, a).ToString();
+                try { comb_output.Text = CombinatoricsC.RepeatP(n, a).ToString(); }
+                catch { comb_output.Text = "Invalid input"; }
                 return;
             case "Ṽ":
                 if (!int.TryParse(k_entry.Text, out k)) return;
