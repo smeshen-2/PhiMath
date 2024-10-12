@@ -36,14 +36,15 @@ public class RootSum
         foreach (var root in Roots)
         {
             Root simplified = root.Simplified();
-            if(rootMap.ContainsKey(root.B))
+            if (simplified.A * simplified.B == 0) continue;
+            if(rootMap.ContainsKey(simplified.B))
             {
-                rootMap[root.B] += root.A;
-                if (rootMap[root.B] == 0) rootMap.Remove(root.B);
+                rootMap[simplified.B] += simplified.A;
+                if (rootMap[simplified.B] == Fraction.Parse("0")) rootMap.Remove(simplified.B);
             }
             else
             {
-                rootMap.Add(root.B, root.A);
+                rootMap.Add(simplified.B, simplified.A);
             }    
         }
         Roots = rootMap.Select(pair => new Root(pair.Value, pair.Key)).ToList();
