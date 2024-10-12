@@ -3,26 +3,26 @@
 namespace Numbers;
 
 /// <summary>
-/// A real number.
+/// A number in the form A0√B0 + A1√B1 + A2√B2...
 /// </summary>
-public class Real
+public class RootSum
 {
     public List<Root> Roots { get; private set; } = new List<Root>();
 
-    public Real(params Root[] roots)
+    public RootSum(params Root[] roots)
     {
         Roots = roots.ToList();
     }
 
-    public Real(Root root)
+    public RootSum(Root root)
     {
         Roots = new List<Root>() { root };
     }
 
     /// <summary>
-    /// Creates a Real number from a string in the form "R0 + R1 + R2 + ... + Rn", where R0, R1, ..., Rn are valid string representations of roots.
+    /// Creates a number from a string in the form "R0 + R1 + R2 + ... + Rn", where R0, R1, ..., Rn are valid string representations of Roots.
     /// </summary>
-    public Real(string s)
+    public RootSum(string s)
     {
         s = s.Replace(" ", "");
         if (s[0] == '-') s = "0" + s;
@@ -32,74 +32,64 @@ public class Real
 
     public void Simplify()
     {
-        Roots = Roots.Select(r => r.Simplified()).OrderByDescending(k => k.B).ToList();
-        var result = new Root?[Roots.Count];
-        result[0] = Roots[0];
-        int currentB = Roots[0].B;
-        int currentIndex = 0;
-        for (int i = 1; i < Roots.Count; i++)
+        var rootMap = new Dictionary<int, Fraction>();
+        foreach (var root in Roots)
         {
-            if (currentB != Roots[i].B)
+            Root simplified = root.Simplified();
+            if(rootMap.ContainsKey(root.B))
             {
-                currentB = Roots[i].B;
-                currentIndex++;
-                result[currentIndex] = Roots[i];
+                rootMap[root.B] += root.A;
+                if (rootMap[root.B] == 0) rootMap.Remove(root.B);
             }
             else
             {
-                result[currentIndex] = new Root(((Root)result[currentIndex]).A + Roots[i].A, currentB);
-            }
+                rootMap.Add(root.B, root.A);
+            }    
         }
-        Roots = new List<Root>();
-        for (int i = 0; i < result.Length; i++)
-        {
-            if (result[i] is null) break;
-            Root r = (Root)result[i];
-            if (r.A * r.B != 0) Roots.Add(r);
-        }
+        Roots = rootMap.Select(pair => new Root(pair.Value, pair.Key)).ToList();
     }
     
-    public static Real operator +(Real a, Real b)
+    public static RootSum operator +(RootSum a, RootSum b)
     {
-        Real result = new Real();
+        RootSum result = new RootSum();
         result.Roots.AddRange(a.Roots);
         result.Roots.AddRange(b.Roots);
         result.Simplify();
         return result;
     }
 
-    public static Real operator +(Real a, Root b)
+    public static RootSum operator +(RootSum a, Root b)
     {
-        Real result = new Real();
+        RootSum result = new RootSum();
         result.Roots.AddRange(a.Roots);
         result.Roots.Add(b);
         result.Simplify();
         return result;
     }
 
-    public static Real operator -(Real real)
+    public static RootSum operator -(RootSum real)
     {
-        return new Real(real.Roots.Select(r => -r).ToArray());
+        return new RootSum(real.Roots.Select(r => -r).ToArray());
     }
 
-    public static Real operator -(Real a, Real b)
+    public static RootSum operator -(RootSum a, RootSum b)
     {
         return a + (-b);
     }
 
-    public static Real operator -(Real a, Root b)
+    public static RootSum operator -(RootSum a, Root b)
     {
         return a + (-b);
     }
 
-    public static Real operator *(Real a, Root b)
+    public static RootSum operator *(RootSum a, Root b)
     {
-        Real result = new Real();
+        RootSum result = new RootSum();
         result.Roots.AddRange(a.Roots.Select(r => r * b));
         return result;
     }
 
-    public static Real operator *(Real a, Real b)
+    public static RootSum operator *(RootSum a, RootSum b)
     {
         int x = a.Roots.Count, y = b.Roots.Count, k = 0;
         var roots = new Root[x * y];
@@ -111,31 +101,31 @@ public class Real
                 k++;
             }
         }
-        Real result = new Real(roots);
+        RootSum result = new RootSum(roots);
         result.Simplify();
         return result;
     }
 
-    public Real Squared()
+    public RootSum Squared()
     {
         return this * this;
     }
 
-    public Real Copy()
+    public RootSum Copy()
     {
         var roots = new List<Root>();
         roots.AddRange(Roots);
-        return new Real(roots.ToArray());
+        return new RootSum(roots.ToArray());
     }
 
-    public static Real operator /(Real a, Root b)
+    public static RootSum operator /(RootSum a, Root b)
     {
-        Real result = new Real(a.Roots.Select(r => r / b).ToArray());
+        RootSum result = new RootSum(a.Roots.Select(r => r / b).ToArray());
         result.Simplify();
         return result;
     }
 
-    public static string operator /(Real a, Real b)
+    public static string operator /(RootSum a, RootSum b)
     {
         if (b.Roots.Count == 1)
         {
@@ -158,8 +148,8 @@ public class Real
         return string.Join("+", Roots).Replace("+-", "-");
     }
 
-    public static implicit operator Real(string s)
+    public static implicit operator RootSum(string s)
     {
-        return new Real(s);
+        return new RootSum(s);
     }
 }

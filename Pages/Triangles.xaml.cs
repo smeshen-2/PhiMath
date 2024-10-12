@@ -43,18 +43,18 @@ public partial class Triangles : ContentPage
     {
         try
         {
-            Real[] sides = new Real[3];
+            RootSum[] sides = new RootSum[3];
             int[] angles = new int[3];
 
             Entry[] entries = { a, b, c, alpha, beta, gamma, S, P, R, r };
             entries.Where(entry => IsGiven(entry) == false).ToList()
                 .ForEach(entry => entry.Text = "");
 
-            if (IsGiven(a)) sides[0] = new Real(a.Text);
+            if (IsGiven(a)) sides[0] = new RootSum(a.Text);
             else sides[0] = null;
-            if (IsGiven(b)) sides[1] = new Real(b.Text);
+            if (IsGiven(b)) sides[1] = new RootSum(b.Text);
             else sides[1] = null;
-            if (IsGiven(c)) sides[2] = new Real(c.Text);
+            if (IsGiven(c)) sides[2] = new RootSum(c.Text);
             else sides[2] = null;
 
             if (IsGiven(alpha)) angles[0] = int.Parse(alpha.Text);
@@ -100,29 +100,29 @@ public partial class Triangles : ContentPage
                 if (knownAngleIndexes.Contains(3 - knownSideIndexes.Sum()))
                 {
                     // cos theorem
-                    Real side1 = sides[knownSideIndexes.First()];
-                    Real side2 = sides[knownSideIndexes.Skip(1).First()];
+                    RootSum side1 = sides[knownSideIndexes.First()];
+                    RootSum side2 = sides[knownSideIndexes.Skip(1).First()];
                     int angle = angles[3 - knownSideIndexes.Sum()];
                     if (cos.ContainsKey(angle) == false) return;
-                    Real side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
+                    RootSum side3Squared = side1.Squared() + side2.Squared() - ("2" * side1 * side2 * cos[angle]);
 
                     
-                    Real area = CalculateArea(side1, side2, angle);
+                    RootSum area = CalculateArea(side1, side2, angle);
 
                     if (side3Squared.Roots.Count == 1)
                     {
-                        Real side3 = new Real(Fraction.Sqrt(side3Squared.Roots[0].A).Simplified());
+                        RootSum side3 = new RootSum(Fraction.Sqrt(side3Squared.Roots[0].A).Simplified());
                         unknownSide.Text = side3.ToString();
 
                         // getting P
-                        Real perimeter = CalculatePerimeter(side1, side2, side3);
+                        RootSum perimeter = CalculatePerimeter(side1, side2, side3);
 
                         CalculateBigRadius(angle, side3.ToString());
 
                         // S = p * r (to get r)
                         if (perimeter.Roots.Count == 1)
                         {
-                            Real smallRadius = "2" * area / perimeter.Roots[0];
+                            RootSum smallRadius = "2" * area / perimeter.Roots[0];
                             r.Text = smallRadius.ToString();
                         }
                         else
@@ -136,7 +136,7 @@ public partial class Triangles : ContentPage
                         unknownSide.Text = side3;
 
                         // getting P
-                        Real perimeter = side1 + side2;
+                        RootSum perimeter = side1 + side2;
                         P.Text = perimeter.ToString() + "+" + side3;
 
                         CalculateBigRadius(angle, side3);
@@ -152,15 +152,15 @@ public partial class Triangles : ContentPage
                 }
                 else
                 {
-                    Real oppositeSide = sides[knownAngleIndexes.First()];
-                    Real knownAdjacentSide = sides[knownSideIndexes.First(i => i != knownAngleIndexes.First())];
+                    RootSum oppositeSide = sides[knownAngleIndexes.First()];
+                    RootSum knownAdjacentSide = sides[knownSideIndexes.First(i => i != knownAngleIndexes.First())];
                     int angle = angles[knownAngleIndexes.First()];
                     if (cos.ContainsKey(angle) == false) return;
-                    Real discriminant = "4" * knownAdjacentSide.Squared() * new Root(cos[angle].Squared()) - ("4" * (knownAdjacentSide.Squared() - oppositeSide.Squared()));
+                    RootSum discriminant = "4" * knownAdjacentSide.Squared() * new Root(cos[angle].Squared()) - ("4" * (knownAdjacentSide.Squared() - oppositeSide.Squared()));
                     discriminant.Simplify();
                     if (discriminant.Roots.Count == 1 && discriminant.Roots[0].B <= 1 && discriminant.Roots[0] >= new Root(0))
                     {
-                        Real side3 = "1/2" * ("2" * knownAdjacentSide * cos[angle] + new Root("V" + discriminant.ToString()));
+                        RootSum side3 = "1/2" * ("2" * knownAdjacentSide * cos[angle] + new Root("V" + discriminant.ToString()));
                         side3.Simplify();
                         unknownSide.Text = side3.ToString();
                         unknownSide.TextColor = uneditedColor;
@@ -193,13 +193,13 @@ public partial class Triangles : ContentPage
     /// <summary>
     /// Calculates R using the sine theorem
     /// </summary>
-    private Real CalculateBigRadius(int angle, string side)
+    private RootSum CalculateBigRadius(int angle, string side)
     {
-        Real radiusValue = "1";
+        RootSum radiusValue = "1";
         Root d = sin[angle] * "2";
         try
         {
-            radiusValue  = new Real(side) / d;
+            radiusValue  = new RootSum(side) / d;
         }
         catch
         {
@@ -218,17 +218,17 @@ public partial class Triangles : ContentPage
     /// Calculates the are using the formula: S = 1/2 * a * b * sin(angle)
     /// </summary>
     /// <returns>s</returns>
-    private Real CalculateArea(Real side1, Real side2, int angle)
+    private RootSum CalculateArea(RootSum side1, RootSum side2, int angle)
     {
-        Real area = "1/2" * side1 * side2 * sin[angle];
+        RootSum area = "1/2" * side1 * side2 * sin[angle];
         S.Text = area.ToString();
         S.TextColor = uneditedColor;
         return area;
     }
 
-    private Real CalculatePerimeter(params Real[] sides)
+    private RootSum CalculatePerimeter(params RootSum[] sides)
     {
-        Real perimeter = sides[0] + sides[1] + sides[2];
+        RootSum perimeter = sides[0] + sides[1] + sides[2];
         P.Text = perimeter.ToString();
         P.TextColor = uneditedColor;
         return perimeter;

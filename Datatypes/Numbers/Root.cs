@@ -174,14 +174,14 @@ public struct Root
         return !(a > b);
     }
 
-    public static Real operator +(Root a, Root b)
+    public static RootSum operator +(Root a, Root b)
     {
-        return new Real(a, b);
+        return new RootSum(a, b);
     }
 
-    public static Real operator -(Root a, Root b)
+    public static RootSum operator -(Root a, Root b)
     {
-        return new Real(a, -b);
+        return new RootSum(a, -b);
     }
 
     public static implicit operator Root(string s)
