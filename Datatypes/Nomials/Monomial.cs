@@ -5,7 +5,13 @@ namespace Nomials;
 
 public struct Monomial
 {
+    /// <summary>
+    /// The coefficient in the monomial.
+    /// </summary>
     public Fraction Coefficient { get; set; }
+    /// <summary>
+    /// The power of the monomial.
+    /// </summary>
     public int Power { get; set; }
 
     public Monomial(Fraction coefficient, int power = 0)
@@ -40,6 +46,10 @@ public struct Monomial
         return res + $"{ToSuperscript(Power)}";
     }
 
+    /// <summary>
+    /// Turns number into a superscript version of itself.
+    /// </summary>
+    /// <param name="n"></param>
     public static string? ToSuperscript(int n)
     {
         if (n < 0) return null;
@@ -50,6 +60,10 @@ public struct Monomial
                 s = s.Replace(c, (char)(c + 8256));
         return s;
     }
+    /// <summary>
+    /// Turns superscript number into its regular representation.
+    /// </summary>
+    /// <param name="s"></param>
     public static int? FromSuperscript(string s)
     {
         foreach (char c in s)
@@ -62,6 +76,11 @@ public struct Monomial
         return int.Parse(s);
     }
 
+    /// <summary>
+    /// Parses a monomial.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <exception cref="ArgumentException"></exception>
     public static Monomial Parse(string s)
     {
         s = s.Replace(" ", "").Replace("(", "").Replace(")", "");
@@ -90,9 +109,17 @@ public struct Monomial
         return new Monomial(coeff, power);
     }
 
-    public double WhereXEquals(double x)
+	/// <summary>
+	/// Finds the result when replacing the variable in the monomial with a given value.
+	/// </summary>
+	/// <param name="x"></param>
+	public double WhereXEquals(double x)
     { return (double)Coefficient * Math.Pow(x, Power); }
-    public Fraction WhereXEquals(Fraction x)
+	/// <summary>
+	/// Finds the result when replacing the variable in the monomial with a given value.
+	/// </summary>
+	/// <param name="x"></param>
+	public Fraction WhereXEquals(Fraction x)
     { return Coefficient * Fraction.Pow(x, Power); }
 
     public static Polynomial operator +(Monomial m1, Monomial m2)

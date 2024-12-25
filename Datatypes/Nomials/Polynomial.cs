@@ -6,12 +6,25 @@ namespace Nomials;
 
 public class Polynomial
 {
+	/// <summary>
+	/// The monomials that make up the polynomial.
+	/// </summary>
 	public List<Monomial> Monomials { get; private set; } = new List<Monomial>();
+	/// <summary>
+	/// The number of monomials that make up the polynomial.
+	/// </summary>
 	public int Count => Monomials.Count;
+	/// <summary>
+	/// The power of the first monomial in the polynomial, which is NOT the highest power if NOT sorted.
+	/// </summary>
 	public int Power => Monomials[0].Power;
 	public Polynomial() { Monomials = new List<Monomial>(); }
 
-	// normalizes unless told otherwise
+	/// <summary>
+	/// Creates instance of a polynomial, based on a list of monomials, which it normalizes unless told otherwise.
+	/// </summary>
+	/// <param name="monos"></param>
+	/// <param name="normalize"></param>
 	public Polynomial(List<Monomial> monos, bool normalize = true)
 	{
 		foreach (var item in monos)
@@ -22,7 +35,11 @@ public class Polynomial
 	}
 	public Polynomial(Monomial mono) { Monomials.Add(mono); }
 
-	// normalizes unless told otherwise
+	/// <summary>
+	/// Parses a polynomial and normalizes it unless told otherwise.
+	/// </summary>
+	/// <param name="s"></param>
+	/// <param name="normalize"></param>
 	public static Polynomial Parse(string s, bool normalize = true)
 	{
 		s = s.Replace(" ", "").Replace("-", "+-").Replace("^+-", "^-").Trim('+');
@@ -34,21 +51,29 @@ public class Polynomial
 		return new Polynomial(listMonos, normalize);
 	}
 
-	// extend polynomial
-	private Polynomial Add(Monomial m)
+	/// <summary>
+	/// Exends polynomial with a monomial.
+	/// </summary>
+	/// <param name="m"></param>
+	private void Add(Monomial m)
 	{
 		Monomials.Add(m);
-		return this;
 	}
-	private Polynomial Add(Polynomial p)
+	/// <summary>
+	/// Exends polynomial with a polynomial.
+	/// </summary>
+	/// <param name="p"></param>
+	private void Add(Polynomial p)
 	{
 		foreach (var item in p.Monomials)
 		{
 			Monomials.Add(item);
 		}
-		return this;
 	}
 
+	/// <summary>
+	/// Gives a copy of polynomial.
+	/// </summary>
 	public Polynomial Copy()
 	{
 		List<Monomial> monos = new List<Monomial>();
@@ -59,7 +84,10 @@ public class Polynomial
 		return new Polynomial(monos, false);
 	}
 
-	public Polynomial Sort()
+	/// <summary>
+	/// Sorts polynomial.
+	/// </summary>
+	public void Sort()
 	{
 		Monomial temp;
 		for (int write = 0; write < Count; write++)
@@ -74,11 +102,12 @@ public class Polynomial
 				}
 			}
 		}
-		return this;
 	}
 
-	// sorts polynomial and does all possible additions and subtractions
-	public Polynomial Normalize()
+	/// <summary>
+	/// Sorts polynomial and sums its monomials with the same power.
+	/// </summary>
+	public void Normalize()
 	{
 		Polynomial p = Copy();
 		p.Sort();
@@ -98,9 +127,12 @@ public class Polynomial
 		Add(new Monomial(coeff, pow));
 		Monomials.RemoveAll(x => x.Coefficient == 0);
 		if (Monomials.Count == 0) Monomials.Add(new Monomial(0));
-		return this;
 	}
 
+	/// <summary>
+	/// Translates an expression into reverse polish notation.
+	/// </summary>
+	/// <exception cref="ArgumentException"></exception>
 	public static string ToRPN(string expr)
 	{
 		string s = expr;
@@ -178,7 +210,11 @@ public class Polynomial
 		return res.Trim();
 	}
 
-	// turns an expression into a single, normalized polynomial
+	/// <summary>
+	/// Turns an expression into a single, normalized polynomial.
+	/// </summary>
+	/// <exception cref="DivideByPolynomialException"></exception>
+	/// <exception cref="DivideByZeroException"></exception>
 	public static Polynomial ParseExpression(string expr)
 	{
 		string[] arrExpr = ToRPN(expr).Split();
@@ -197,10 +233,8 @@ public class Polynomial
 					operands.Push(operands.Pop() * operands.Pop());
 					continue;
 				case "/":
-					Monomial divisor;
-					try { divisor = Monomial.Parse(operands.Pop().ToString()); }
-					catch { throw new DivideByPolynomialException(); }
-					if (divisor.Coefficient == 0) throw new DivideByZeroException();
+					Polynomial divisor = operands.Pop();
+					if (divisor.Monomials[0].Coefficient == 0) throw new DivideByZeroException();
 					operands.Push(operands.Pop() / divisor);
 					continue;
 				case "^":
@@ -226,10 +260,22 @@ public class Polynomial
 					continue;
 			}
 		}
-		return operands.Pop().Sort();
+		Polynomial sorted = operands.Pop();
+		sorted.Sort();
+		return sorted;
 	}
 
+	/// <summary>
+	/// Finds all rational (and possibly some real) roots of polynomial equation.
+	/// </summary>
+	/// <param name="expr"></param>
+	/// <returns>List of real roots that cannot be empty.</returns>
 	public static List<double> Solve(string expr) => Solve(ParseEquation(expr));
+	/// <summary>
+	/// Finds all rational (and possibly some real) roots of polynomial.
+	/// </summary>
+	/// <param name="polynomial"></param>
+	/// <returns>List of real roots that cannot be empty.</returns>
 	public static List<double> Solve(Polynomial polynomial)
 	{
 		Polynomial p = polynomial.Copy();
@@ -247,16 +293,21 @@ public class Polynomial
 		if (p.Count != 2 && p.Power > 2) res.AddRange(SolveHorner(p).Select(f => (double)f));
 		if (p.Count == 2 || p.Power <= 2)
 			try { res.AddRange(SimpleSolve(p)); } // if a solution is found but SimpleSolve returns xeO, ignore
-			catch (xeOException) { if (res.Count == 0) throw; }
+			catch (NoRealRootsException) { if (res.Count == 0) throw; }
 		res.Sort();
 		return res;
 	}
-	// finds all solutions to binomials and polynomials <= 2nd power
+	/// <summary>
+	/// Finds all real roots of polynomials of at most 2nd power.
+	/// </summary>
+	/// <param name="p"></param>
+	/// <returns>List of all real roots that cannot be empty.</returns>
+	/// <exception cref="NoRealRootsException"></exception>
 	private static List<double> SimpleSolve(Polynomial p)
 	{
 		List<double> res = new List<double>();
 
-		if (p.Power == 0) throw p.Monomials[0].Coefficient == 0 ? new AxeQException() : new xeOException();
+		if (p.Power == 0) throw p.Monomials[0].Coefficient == 0 ? new AllRealRootsException() : new NoRealRootsException();
 		if (p.Power == 1) { res.Add((double)(-p.GetCoefficientByPower(0) / p.GetCoefficientByPower(1))); return res; }
 		if (p.Power == 2) return SolveQuadratic(p);
 
@@ -275,10 +326,16 @@ public class Polynomial
 				res.Add(-Math.Pow(t, 1 / (double)p.Power));
 				return res;
 			}
-			throw new xeOException();
+			throw new NoRealRootsException();
 		}
 		return res;
 	}
+	/// <summary>
+	/// Finds both roots of quadratic polynomial.
+	/// </summary>
+	/// <param name="p"></param>
+	/// <returns>List of both real roots.</returns>
+	/// <exception cref="NoRealRootsException"></exception>
 	private static List<double> SolveQuadratic(Polynomial p)
 	{
 		List<double> res = new List<double>();
@@ -286,15 +343,21 @@ public class Polynomial
 		double b = (double)p.GetCoefficientByPower(1);
 		double c = (double)p.GetCoefficientByPower(0);
 		double discriminant = b * b - 4 * a * c;
-		if (discriminant < 0) throw new xeOException();
+		if (discriminant < 0) throw new NoRealRootsException();
 		res.Add((-b + Math.Sqrt(discriminant)) / (2 * a));
 		res.Add((-b - Math.Sqrt(discriminant)) / (2 * a));
 		return res;
 	}
+	/// <summary>
+	/// Finds all rational roots of polynomial, using Horner's method.
+	/// </summary>
+	/// <param name="p"></param>
+	/// <returns>List of all rational roots that cannot be empty.</returns>
+	/// <exception cref="NoRationalRootsException"></exception>
 	private static List<Fraction> SolveHorner(Polynomial p)
 	{
 		List<Fraction> res = new List<Fraction>();
-		p = IntifyCoefficients(p);
+		IntifyCoefficients(p);
 		int first = Math.Abs(p.GetCoefficientByPower(p.Power).P);
 		int last = Math.Abs(p.GetCoefficientByPower(0).P);
 
@@ -323,10 +386,14 @@ public class Polynomial
 				}
 			}
 
-		if (res.Count == 0) throw new UnsolvableException();
+		if (res.Count == 0) throw new NoRationalRootsException();
 		return res;
 	}
-	public static Polynomial IntifyCoefficients(Polynomial p)
+	/// <summary>
+	/// Multiplies polynomial by numbers repeatedly, until all coefficients of the polynomial become integers.
+	/// </summary>
+	/// <param name="p"></param>
+	public static void IntifyCoefficients(Polynomial p)
 	{
 		bool done = false;
 		while (!done)
@@ -340,35 +407,41 @@ public class Polynomial
 					break;
 				}
 		}
-		return p;
 	}
 
-	public static string Factorize(Polynomial p)
+	/// <summary>
+	/// Turns polynomial into a product represented by a list of the smallest polynomials that comprise it.
+	/// The element at index 0 is always a monomial, even if it is 1.
+	/// </summary>
+	/// <param name="p"></param>
+	public static List<Polynomial> Factorize(Polynomial p)
 	{
-		string res = "";
+		List<Polynomial> res = new List<Polynomial>();
 		Polynomial remainder = p.Copy();
-		List<double> solutions = Solve(p);
-		double prevSolution = solutions[0];
-		int power = 0;
-		Polynomial binomial = new Polynomial();
+		Monomial factor = new Monomial(remainder.Monomials[0].Coefficient, remainder.Monomials[remainder.Count - 1].Power);
+		res.Add(new Polynomial(new Monomial(1)));
+		remainder /= factor;
+		List<double> solutions;
+		try { solutions = Solve(remainder); }
+		catch (NoRootsException) { res.Add(remainder); return res; }
+
 		foreach (var solution in solutions)
 		{
-			if (solution == 0) continue;
-			if (solution == prevSolution) power++;
-			else
-			{
-				res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
-				prevSolution = solution;
-				power = 1;
-			}
-			binomial = ParseExpression("x - (" + solution + ")");
+			Polynomial binomial = ParseExpression("x - (" + solution + ")");
+			res.Add(binomial);
 			remainder /= binomial;
 		}
-		res += "(" + binomial + ")" + (power == 1 ? "" : Monomial.ToSuperscript(power));
-		if (remainder.ToString() != "1") res = remainder + res;
+		if (remainder.Count != 1) res.Add(remainder);
+		res.Sort((p1, p2) => p1.Power - p2.Power);
+		res[0] = new Polynomial(factor);
 		return res;
 	}
 
+	/// <summary>
+	/// Turns an equation into a single, normalized polynomial by subtracting the right side from the left side.
+	/// </summary>
+	/// <param name="expr"></param>
+	/// <exception cref="ArgumentException"></exception>
 	public static Polynomial ParseEquation(string expr)
 	{
 		expr = expr.Replace(" ", "");
@@ -377,6 +450,10 @@ public class Polynomial
 		return ParseExpression(expr);
 	}
 
+	/// <summary>
+	/// Finds the result when replacing the variable in the polynomial with a given value.
+	/// </summary>
+	/// <param name="x"></param>
 	public double WhereXEquals(double x)
 	{
 		double res = 0;
@@ -386,6 +463,10 @@ public class Polynomial
 		}
 		return res;
 	}
+	/// <summary>
+	/// Finds the result when replacing the variable in the polynomial with a given value.
+	/// </summary>
+	/// <param name="x"></param>
 	public Fraction WhereXEquals(Fraction x)
 	{
 		Fraction res = Fraction.Parse(0);
@@ -396,6 +477,10 @@ public class Polynomial
 		return res;
 	}
 
+	/// <summary>
+	/// Finds the coefficient of the FIRST monomial with a specified power.
+	/// </summary>
+	/// <param name="power"></param>
 	public Fraction GetCoefficientByPower(int power)
 	{
 		Fraction coeff = Monomials.Find(n => n.Power == power).Coefficient;
@@ -445,13 +530,13 @@ public class Polynomial
 	{
 		Polynomial res = new Polynomial();
 		Polynomial p = p1.Copy();
-		Polynomial t;
-		while (p.Power >= p2.Power)
+		while (p.Power >= p2.Power && p.ToString() != "0")
 		{
 			res.Add(p.Monomials[0] / p2.Monomials[0]);
-			t = res.Monomials[res.Count - 1] * p2;
+			Polynomial t = res.Monomials[res.Count - 1] * p2;
 			p -= t;
 		}
+		if (p.ToString() != "0") throw new DivideByPolynomialException();
 		return res;
 	}
 	public static Polynomial operator %(Polynomial p1, Polynomial p2)

@@ -2,8 +2,9 @@
 
 public class xException : Exception { }
 
-public class AxeQException : xException { public override string Message => "∀x∈ℚ"; }
-public class xeOException : xException { public override string Message => "x∈∅"; }
-public class UnsolvableException : xException { public override string Message => "Unsolvable"; }
+public class AllRealRootsException : xException { public override string Message => "∀x∈ℝ"; }
+public class NoRootsException : xException { public override string Message => "x∉ℝ"; }
+public class NoRealRootsException : NoRootsException { }
+public class NoRationalRootsException : NoRootsException { public override string Message => "Unsolvable"; }
 
-public class DivideByPolynomialException : Exception { public override string Message => "Divisor cannot be a polynomial"; }
+public class DivideByPolynomialException : Exception { public override string Message => "Division yields polynomial denominator"; }

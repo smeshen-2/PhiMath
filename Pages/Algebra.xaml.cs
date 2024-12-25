@@ -12,7 +12,7 @@ public partial class Algebra : ContentPage
 		algebra_entry.Text = "";
 		Evolver.AddGroup('N', "0123456789x");
 		Evolver.AddGroup('O', "+-*/()^");
-		Evolver.Separator = "|";
+		Evolver.separator = "|";
 	}
 	private void Factor_Clicked(object sender, EventArgs e)
 	{
@@ -31,7 +31,7 @@ public partial class Algebra : ContentPage
 			try
 			{
 				Polynomial p = Polynomial.ParseExpression(entry);
-				if (p.Power == 1) { algebra_output.Text = "No"; return; }
+				if (p.Power == 1) { algebra_output.Text = p.ToString(); return; }
 				if (p.Power == 0)
 				{
 					if (p.Monomials[0].Coefficient.Q != 1) { algebra_output.Text = "Fraction"; return; }
@@ -41,7 +41,38 @@ public partial class Algebra : ContentPage
 					algebra_output.Text = string.Join(", ", GetFactors(n));
 					return;
 				}
-				algebra_output.Text = Polynomial.Factorize(p);
+				List<Polynomial> res = Polynomial.Factorize(p);
+
+				if (res[0].ToString() == "-1")
+				{
+					algebra_output.Text = "-";
+					res.RemoveAt(0);
+				}
+				else if (res[0].ToString() == "1")
+				{
+					algebra_output.Text = "";
+					res.RemoveAt(0);
+				}
+				else
+				{
+					algebra_output.Text = res[0].ToString();
+					res.RemoveAt(0);
+				}
+				int pow = 1;
+				Polynomial current = res[0];
+				for (int i = 1; i < res.Count; i++)
+				{
+					if (res[i].ToString() == current.ToString()) pow++;
+					else
+					{
+						algebra_output.Text += "(" + current.ToString() + ")";
+						if(pow != 1) algebra_output.Text += Monomial.ToSuperscript(pow);
+						pow = 1;
+						current = res[i];
+					}
+				}
+				algebra_output.Text += "(" + current.ToString() + ")";
+				if (pow != 1) algebra_output.Text += Monomial.ToSuperscript(pow);
 			}
 			catch (ArgumentException) { algebra_output.Text = "Invalid input"; }
 			catch { algebra_output.Text = "Something went wrong"; }

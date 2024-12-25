@@ -5,14 +5,14 @@ namespace WordEvolution;
 class Evolver
 {
     private static Dictionary<char, HashSet<char>> groups = new Dictionary<char, HashSet<char>>();
-    public static string Separator = "/";
+    public static string separator = "/";
     public static void AddGroup(char name, IEnumerable<char> group)
     {
         groups.Add(name, group.ToHashSet());
     }
     private static string GroupEvolve(string word, string rule) // one group evolves into another
     {
-        string[] strings = rule.Split(Separator);
+        string[] strings = rule.Split(separator);
         string beforeGroup = string.Join(null, groups[strings[0][0]]);
         string afterGroup = string.Join(null, groups[strings[1][0]]);
         string condition = strings.Length == 2 ? "_" : strings[2];
@@ -34,7 +34,7 @@ class Evolver
     }
     public static string Evolve(string word, string rule) // any evolution that doesn't have a group as 'after'
     {
-        string[] strings = rule.Split(Separator);
+        string[] strings = rule.Split(separator);
         string before = strings[0];
         string after = strings[1];
         if (after.Length > 0 && groups.ContainsKey(after[0])) return GroupEvolve(word, rule);

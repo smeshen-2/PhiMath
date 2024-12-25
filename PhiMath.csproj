@@ -39,6 +39,7 @@
     <MauiIcon Include="Resources\AppIcon\phimath.svg" />
 
     <!-- Splash Screen -->
+    <MauiSplashScreen Include="Resources\Splash\splash.png" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
