@@ -6,6 +6,7 @@ namespace PhiMath.Pages;
 
 public partial class Algebra : ContentPage
 {
+	private static Color uneditedColor, editedColor;
 	public Algebra()
 	{
 		InitializeComponent();
@@ -13,9 +14,15 @@ public partial class Algebra : ContentPage
 		Evolver.AddGroup('N', "0123456789x");
 		Evolver.AddGroup('O', "+-*/()^");
 		Evolver.separator = "|";
+
+		if (App.Current.RequestedTheme == AppTheme.Light) uneditedColor = Colors.Black;
+		else uneditedColor = Colors.White;
+
+		if (App.Current.Resources.TryGetValue("Secondary", out var colorvalue)) editedColor = (Color)colorvalue;
 	}
 	private void Factor_Clicked(object sender, EventArgs e)
 	{
+		algebra_output.TextColor = uneditedColor;
 		string entry = algebra_entry.Text;
 		if (entry == "") { algebra_output.Text = "Input an integer, polynomial or expression"; return; }
 
@@ -80,6 +87,7 @@ public partial class Algebra : ContentPage
 	}
 	private void Normalize_Clicked(object sender, EventArgs e)
 	{
+		algebra_output.TextColor = uneditedColor;
 		string entry = algebra_entry.Text;
 		if (entry == "") { algebra_output.Text = "Input a polynomial or expression"; return; }
 
@@ -90,6 +98,7 @@ public partial class Algebra : ContentPage
 	}
 	private void Sqrt_Clicked(object sender, EventArgs e)
 	{
+		algebra_output.TextColor = uneditedColor;
 		string entry = algebra_entry.Text;
 		if (entry == "") { algebra_output.Text = "Input an integer"; return; }
 
@@ -122,6 +131,7 @@ public partial class Algebra : ContentPage
 	}
 	private void Solve_Clicked(object sender, EventArgs e)
 	{
+		algebra_output.TextColor = uneditedColor;
 		string entry = algebra_entry.Text;
 		if (entry == "") { algebra_output.Text = "Input a polynomial or expression"; return; }
 
@@ -191,6 +201,6 @@ public partial class Algebra : ContentPage
 
     private void InputTextChanged(object sender, TextChangedEventArgs e)
     {
-		algebra_output.Text = "";
+		algebra_output.TextColor = editedColor;
     }
 }
