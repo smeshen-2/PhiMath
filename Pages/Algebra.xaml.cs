@@ -188,4 +188,9 @@ public partial class Algebra : ContentPage
 		output = output.Substring(0, output.Length - 2);
 		return output;
 	}
+
+    private void InputTextChanged(object sender, TextChangedEventArgs e)
+    {
+		algebra_output.Text = "";
+    }
 }
