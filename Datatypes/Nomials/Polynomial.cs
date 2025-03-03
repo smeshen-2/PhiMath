@@ -418,9 +418,12 @@ public class Polynomial
 	{
 		List<Polynomial> res = new List<Polynomial>();
 		Polynomial remainder = p.Copy();
+
+		// divide polynomial so that the leading coefficient is 1 and there is a free term
 		Monomial factor = new Monomial(remainder.Monomials[0].Coefficient, remainder.Monomials[remainder.Count - 1].Power);
 		res.Add(new Polynomial(new Monomial(1)));
 		remainder /= factor;
+
 		List<double> solutions;
 		try { solutions = Solve(remainder); }
 		catch (NoRootsException) { res.Add(remainder); return res; }
@@ -429,6 +432,7 @@ public class Polynomial
 		{
 			Polynomial binomial = ParseExpression("x - (" + solution + ")");
 			res.Add(binomial);
+			// PROBLEM! BINOMIAL CONTAINS FLOAT, WHICH IS NOT PRECISE!
 			remainder /= binomial;
 		}
 		if (remainder.Count != 1) res.Add(remainder);

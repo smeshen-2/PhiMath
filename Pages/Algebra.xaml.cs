@@ -199,7 +199,17 @@ public partial class Algebra : ContentPage
 		return output;
 	}
 
-    private void InputTextChanged(object sender, TextChangedEventArgs e)
+	private void Differentiate_Clicked(object sender, EventArgs e)
+	{
+
+    }
+
+	private void Integrate_Clicked(object sender, EventArgs e)
+	{
+
+	}
+
+	private void InputTextChanged(object sender, TextChangedEventArgs e)
     {
 		algebra_output.TextColor = editedColor;
     }

@@ -2,32 +2,48 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="PhiMath.Pages.Algebra">
-	<AbsoluteLayout>
-		<Entry x:Name="algebra_entry"
-			   AbsoluteLayout.LayoutFlags="All"
-			   AbsoluteLayout.LayoutBounds="0.5, 0.05, 0.7, 0.2"
-			   VerticalOptions="Center"
-               TextChanged="InputTextChanged"/>
-		<Label x:Name="algebra_output"
-			   AbsoluteLayout.LayoutFlags="All"
-			   AbsoluteLayout.LayoutBounds="0.5, 0.225, 1, 0.2"
-			   HorizontalTextAlignment="Center"
-			   FontSize="14"/>
-		<Button Text="Factor"
-				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.2, 0.3, 0.35, 0.15"
-				Clicked="Factor_Clicked"/>
-        <Button Text="Normalize"
-				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.8, 0.3, 0.35, 0.15"
-				Clicked="Normalize_Clicked"/>
-        <Button Text="Square Root"
-				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.2, 0.5, 0.35, 0.15"
-				Clicked="Sqrt_Clicked"/>
-        <Button Text="Solve"
-				AbsoluteLayout.LayoutFlags="All"
-				AbsoluteLayout.LayoutBounds="0.8, 0.5, 0.35, 0.15"
-				Clicked="Solve_Clicked"/>
-    </AbsoluteLayout>
+	<ScrollView>
+        <VerticalStackLayout Margin="20"
+                             Spacing="10">
+            <Border StrokeShape="RoundRectangle 10,10,10,10">
+                <Editor x:Name="algebra_entry"
+						FontSize="16"
+                        AutoSize="TextChanges"
+						TextChanged="InputTextChanged"/>
+            </Border>
+            <Label x:Name="algebra_output"
+				   HorizontalTextAlignment="Center"
+				   FontSize="14"/>
+            <Grid RowDefinitions="*, *"
+                  ColumnDefinitions="*, *, *"
+                  RowSpacing="10"
+                  ColumnSpacing="10"
+                  HeightRequest="210">
+                <Button Text="Factorize"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Clicked="Factor_Clicked"/>
+                <Button Text="Square Root"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Clicked="Sqrt_Clicked"/>
+                <Button Text="Normalize"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Clicked="Normalize_Clicked"/>
+                <Button Text="Solve"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Clicked="Solve_Clicked"/>
+                <Button Text="d/dx"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Clicked="Differentiate_Clicked"/>
+                <Button Text="∫dx"
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Clicked="Integrate_Clicked"/>
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
